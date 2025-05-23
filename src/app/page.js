@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import {
   Accordion,
   AccordionContent,
@@ -55,7 +56,7 @@ export default function Home() {
           <Link href="/login" className="hover:underline">
             login
           </Link>
-          <Link href="/cadastro" className="hover:underline">
+          <Link href="/register" className="hover:underline">
             cadastro
           </Link>
         </div>
