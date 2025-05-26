@@ -19,15 +19,6 @@ Este é um projeto completo com **frontend** em Next.js e **backend** com Node.j
 
 ---
 
-## 🧩 Funcionalidades
-
-- Autenticação de usuários (cadastro e login)
-- Redirecionamento para a página de histórico após login
-- Integração entre frontend e backend localmente
-- Banco de dados com MySQL e Prisma
-
----
-
 ## 🧑‍💻 Como rodar o projeto
 
 ### 1. Clone o repositório
