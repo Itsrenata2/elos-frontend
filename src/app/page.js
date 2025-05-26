@@ -62,8 +62,9 @@ export default function Home() {
         </div>
       </div>
       <div className="pt-20">
-        <h1 className="text-4xl font-black mb-4 text-center text-zinc-900 uppercase">
-          Sua voz importa. Sua segurança é prioridade.
+        {/* Alterações aqui para centralizar e adicionar quebra de linha */}
+        <h1 className="text-4xl font-black mb-4 text-center text-zinc-900 uppercase mx-auto max-w-2xl">
+          Sua voz importa. Sua <br /> segurança é prioridade.
         </h1>
         <p className="text-lg font-semibold text-center max-w-2xl mb-8 px-4 mx-auto text-zinc-900">
           Nossa plataforma existe para acolher, registrar e acompanhar denúncias
