@@ -1,4 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
+"use client"; // Add this line if it's not already there
+
 import {
   Accordion,
   AccordionContent,
@@ -6,8 +8,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 export default function Home() {
+  const router = useRouter(); // Initialize useRouter
+
   const accordions = [
     {
       title: "Cartilhas para download",
@@ -46,6 +51,11 @@ export default function Home() {
     },
   ];
 
+  // Function to handle redirection with query parameter
+  const handleAuthRedirect = (destinationPath) => {
+    router.push(`/login?redirect=${encodeURIComponent(destinationPath)}`);
+  };
+
   return (
     <div className="min-h-screen bg-zinc-200 flex flex-col items-center justify-center py-8 font-jost">
       <div className="absolute top-4 w-full px-8 flex items-center justify-between text-zinc-800">
@@ -53,6 +63,7 @@ export default function Home() {
           <img src="/logo-elos.svg" alt="Elos Logo" className="w-24 h-auto" />
         </div>
         <div className="font-bold flex gap-6 items-center">
+          {/* These links already go to login/register, no change needed for them */}
           <Link href="/login" className="hover:underline">
             login
           </Link>
@@ -62,7 +73,6 @@ export default function Home() {
         </div>
       </div>
       <div className="pt-20">
-        {/* Alterações aqui para centralizar e adicionar quebra de linha */}
         <h1 className="text-4xl font-black mb-4 text-center text-zinc-900 uppercase mx-auto max-w-2xl">
           Sua voz importa. Sua <br /> segurança é prioridade.
         </h1>
@@ -99,21 +109,29 @@ export default function Home() {
         </Accordion>
       </div>
       <div className="flex flex-wrap justify-center space-x-4 mt-8 px-4">
-        <Link href="/denuncias/nova" className="mb-4">
-          <button className="text-zinc-900 border-zinc-900 border-2 hover:bg-zinc-900 hover:text-white font-bold py-3 px-6 rounded-full w-full sm:w-auto">
-            Fazer denúncia
-          </button>
-        </Link>
-        <Link href="/historico" className="mb-4">
-          <button className="hover:border-zinc-900 border-2 bg-zinc-900 text-white font-bold py-3 px-6 rounded-full w-full sm:w-auto">
-            Acompanhar denúncias
-          </button>
-        </Link>
-        <Link href="/solicitacoes/nova" className="mb-4">
-          <button className="text-zinc-900 border-zinc-900 border-2 hover:bg-zinc-900 hover:text-white font-bold py-3 px-6 rounded-full w-full sm:w-auto">
-            Solicitar apoio
-          </button>
-        </Link>
+        {/* CORRECTED: "Fazer denúncia" now redirects to /complaints */}
+        <button
+          onClick={() => handleAuthRedirect("/complaints")} // Intended destination is /complaints
+          className="text-zinc-900 border-zinc-900 border-2 hover:bg-zinc-900 hover:text-white font-bold py-3 px-6 rounded-full w-full sm:w-auto mb-4"
+        >
+          Fazer denúncia
+        </button>
+
+        {/* This remains for "Acompanhar denúncias" */}
+        <button
+          onClick={() => handleAuthRedirect("/records")} // Intended destination is /records
+          className="hover:border-zinc-900 border-2 bg-zinc-900 text-white font-bold py-3 px-6 rounded-full w-full sm:w-auto mb-4"
+        >
+          Acompanhar denúncias
+        </button>
+
+        {/* This remains for "Solicitar apoio" */}
+        <button
+          onClick={() => handleAuthRedirect("/requests")} // Intended destination is /requests
+          className="text-zinc-900 border-zinc-900 border-2 hover:bg-zinc-900 hover:text-white font-bold py-3 px-6 rounded-full w-full sm:w-auto mb-4"
+        >
+          Solicitar apoio
+        </button>
       </div>
       <div className="mt-12 text-sm text-gray-500 text-center px-4">
         <p>© 2025 Elos. Todos os direitos reservados.</p>

@@ -1,28 +1,37 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"; // Importe useSearchParams
 import Link from "next/link";
-import { useState } from "react"; // Importe useState para gerenciar o estado dos inputs e mensagens de erro
+import { useState, useEffect } from "react"; // Importe useEffect
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState(""); // Alterado para 'email' para corresponder ao DTO de login
+  const searchParams = useSearchParams(); // Use o hook useSearchParams
+
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // Estado para indicar carregamento
+  const [isLoading, setIsLoading] = useState(false);
+  const [redirectTo, setRedirectTo] = useState("/records"); // Estado para armazenar o destino final
+
+  // Use useEffect para ler o parâmetro 'redirect' da URL uma vez
+  useEffect(() => {
+    const redirectParam = searchParams.get("redirect");
+    if (redirectParam) {
+      setRedirectTo(decodeURIComponent(redirectParam)); // Decodifica o URL para o caminho original
+    } else {
+      setRedirectTo("/records"); // Padrão se não houver parâmetro 'redirect' (ex: veio do link "login" no menu)
+    }
+  }, [searchParams]); // Dependência em searchParams para re-executar se os parâmetros da URL mudarem
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Limpa qualquer erro anterior
-    setIsLoading(true); // Ativa o estado de carregamento
+    setError("");
+    setIsLoading(true);
 
     try {
-      // **URL do endpoint de login do seu NestJS**
-      // Use a variável de ambiente definida em .env.local
-      // Ex: NEXT_PUBLIC_NESTJS_API_URL_LOGIN=http://localhost:3001/auth/login
       const backendLoginUrl = process.env.NEXT_PUBLIC_NESTJS_API_URL_LOGIN;
 
-      // Verificação para depuração (opcional, pode remover depois)
       if (!backendLoginUrl) {
         console.error(
           "Variável de ambiente NEXT_PUBLIC_NESTJS_API_URL_LOGIN não definida."
@@ -33,50 +42,43 @@ export default function LoginPage() {
         setIsLoading(false);
         return;
       }
-      console.log("Tentando login em:", backendLoginUrl); // Para depuração
+      console.log("Tentando login em:", backendLoginUrl);
 
       const response = await fetch(backendLoginUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        // Envia os dados como JSON.
-        // As chaves 'email' e 'password' DEVEM CORRESPONDER EXATAMENTE
-        // ao que seu LoginAuthDto (no NestJS) espera.
         body: JSON.stringify({ email, password }),
       });
 
-      // **DEBUG: log da resposta bruta antes de tentar JSON.parse**
       const responseText = await response.text();
       console.log("Status da Resposta:", response.status);
       console.log("Corpo da Resposta (texto puro):", responseText);
 
       let data;
       try {
-        data = JSON.parse(responseText); // Tenta parsear a resposta como JSON
+        data = JSON.parse(responseText);
       } catch (parseError) {
         console.error("Erro ao fazer JSON.parse da resposta:", parseError);
         setError(
           "Erro inesperado na resposta do servidor. Consulte o console para mais detalhes."
         );
         setIsLoading(false);
-        return; // Interrompe a execução
+        return;
       }
 
       if (response.ok) {
-        // Assumindo que o NestJS retorna um token JWT na propriedade 'token' (NÃO 'access_token')
         if (data && data.token) {
-          // <-- MUDAR AQUI: de data.access_token para data.token
-          localStorage.setItem("authToken", data.token); // <-- E AQUI: de data.access_token para data.token
-          router.push("/records"); // Redireciona para a página de records
+          localStorage.setItem("authToken", data.token);
+          // *** AQUI É A MUDANÇA PRINCIPAL ***
+          router.push(redirectTo); // Redireciona para o caminho determinado no useEffect
         } else {
           setError(
             "Login bem-sucedido, mas nenhum token de autenticação foi recebido."
           );
         }
       } else {
-        // Lida com erros do backend (ex: 401 Unauthorized, 400 Bad Request)
-        // NestJS geralmente retorna erros de validação como um array de strings em 'message'
         const errorMessage = data.message
           ? Array.isArray(data.message)
             ? data.message.join(", ")
@@ -85,13 +87,12 @@ export default function LoginPage() {
         setError(errorMessage);
       }
     } catch (err) {
-      // Lida com erros de rede ou outros problemas na requisição (servidor offline, CORS)
       console.error("Erro na requisição de login:", err);
       setError(
         "Não foi possível conectar ao servidor. Verifique sua conexão ou tente mais tarde."
       );
     } finally {
-      setIsLoading(false); // Desativa o estado de carregamento, independentemente do sucesso ou falha
+      setIsLoading(false);
     }
   };
 
@@ -110,10 +111,10 @@ export default function LoginPage() {
               E-mail
             </label>
             <input
-              type="email" // Alterado para type="email" para melhor validação do navegador
+              type="email"
               className="w-full px-4 py-2 rounded-md bg-zinc-300 text-zinc-800 focus:outline-none"
               placeholder="Digite seu e-mail"
-              value={email} // Conecta ao estado 'email'
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
             />

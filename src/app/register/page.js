@@ -10,21 +10,17 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // Estado para indicar carregamento
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError(""); // Limpa qualquer erro anterior
-    setIsLoading(true); // Ativa o estado de carregamento
-
+    setError("");
+    setIsLoading(true);
     try {
       // **URL do endpoint de registro do seu NestJS**
-      // Use a variável de ambiente definida em .env.local
-      // Ex: NEXT_PUBLIC_NESTJS_API_URL_REGISTER=http://localhost:3001/auth/register
       const backendRegisterUrl =
         process.env.NEXT_PUBLIC_NESTJS_API_URL_REGISTER;
 
-      // Verificação para depuração (opcional, pode remover depois)
       if (!backendRegisterUrl) {
         console.error(
           "Variável de ambiente NEXT_PUBLIC_API_URL_REGISTER não definida."
@@ -35,16 +31,13 @@ export default function RegisterPage() {
         setIsLoading(false);
         return;
       }
-      console.log("Tentando registrar em:", backendRegisterUrl); // Para depuração
+      console.log("Tentando registrar em:", backendRegisterUrl);
 
       const response = await fetch(backendRegisterUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        // Envia os dados como JSON.
-        // As chaves 'name', 'email' e 'password' DEVEM CORRESPONDER EXATAMENTE
-        // ao que seu CreateAuthDto (no NestJS) espera.
         body: JSON.stringify({ name, email, password }),
       });
 
@@ -55,25 +48,22 @@ export default function RegisterPage() {
 
       let data;
       try {
-        data = JSON.parse(responseText); // Tenta parsear a resposta como JSON
+        data = JSON.parse(responseText);
       } catch (parseError) {
         console.error("Erro ao fazer JSON.parse da resposta:", parseError);
         setError(
           "Erro inesperado na resposta do servidor. Consulte o console para mais detalhes."
         );
         setIsLoading(false);
-        return; // Interrompe a execução
+        return;
       }
 
       if (response.ok) {
-        // Se a resposta for 2xx (geralmente 201 Created para registro)
         alert(
           "Cadastro realizado com sucesso! Faça login para acessar sua conta."
         );
-        router.push("/login"); // Redireciona para a página de login
+        router.push("/login");
       } else {
-        // Lida com erros do backend (ex: e-mail já em uso, senha fraca, campos ausentes)
-        // NestJS geralmente retorna erros de validação como um array de strings em 'message'
         const errorMessage = data.message
           ? Array.isArray(data.message)
             ? data.message.join(", ")
@@ -82,13 +72,12 @@ export default function RegisterPage() {
         setError(errorMessage);
       }
     } catch (err) {
-      // Lida com erros de rede ou outros problemas na requisição (servidor offline, CORS)
       console.error("Erro na requisição de registro:", err);
       setError(
         "Não foi possível conectar ao servidor. Tente novamente mais tarde."
       );
     } finally {
-      setIsLoading(false); // Desativa o estado de carregamento
+      setIsLoading(false);
     }
   };
 
@@ -120,7 +109,7 @@ export default function RegisterPage() {
               E-mail
             </label>
             <input
-              type="email" // Alterado para type="email"
+              type="email"
               className="w-full px-4 py-2 rounded-md bg-zinc-300 text-zinc-800 focus:outline-none"
               placeholder="Digite seu e-mail"
               value={email}
