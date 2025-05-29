@@ -13,7 +13,6 @@ Este é um projeto completo com **frontend** em Next.js e **backend** com Node.j
 
 ### Backend
 - [Node.js](https://nodejs.org/)
-- [Express](https://expressjs.com/)
 - [Prisma ORM](https://www.prisma.io/)
 - [MySQL](https://www.mysql.com/)
 
