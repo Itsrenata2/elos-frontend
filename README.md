@@ -12,6 +12,7 @@ Este é um projeto completo com **frontend** em Next.js e **backend** com Node.j
 - [Tailwind CSS](https://tailwindcss.com/)
 
 ### Backend
+- [Nest.js] (https://nestjs.com/)
 - [Node.js](https://nodejs.org/)
 - [Prisma ORM](https://www.prisma.io/)
 - [MySQL](https://www.mysql.com/)
