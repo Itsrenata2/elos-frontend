@@ -1,10 +1,12 @@
+// pages/admin/dashboard.js
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import AuthWrapper from "../../components/AuthWrapper";
-import Sidebar from "../../components/Sidebar";
-import { useState, useMemo, useEffect } from "react";
+import Sidebar from "../../components/Sidebar"; // Importe a Sidebar atualizada
+import HistoryCard from "../../components/HistoryCard"; // Importa o novo componente
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   FiList,
   FiLogOut,
@@ -16,7 +18,7 @@ import {
   FiLoader,
 } from "react-icons/fi";
 
-// Componente de Modal para Envio de Email
+// Componente de Modal para Envio de Email (mantido como está)
 const EmailModal = ({ isOpen, onClose, item, onSendEmail }) => {
   const [recipientEmail, setRecipientEmail] = useState("");
   const [emailSubject, setEmailSubject] = useState("");
@@ -24,7 +26,6 @@ const EmailModal = ({ isOpen, onClose, item, onSendEmail }) => {
 
   useEffect(() => {
     if (item) {
-      // Pre-fill subject and body with item details
       setEmailSubject(`Encaminhamento de ${item.type}: ${item.title}`);
       setEmailBody(
         `Detalhes da ${item.type}:\n\n` +
@@ -47,105 +48,103 @@ const EmailModal = ({ isOpen, onClose, item, onSendEmail }) => {
   };
 
   return (
-    <AuthWrapper>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
-        <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-          <h2 className="text-2xl font-bold text-zinc-800 mb-4">
-            Encaminhar por Email
-          </h2>
-          {item && (
-            <div className="mb-4 text-zinc-700">
-              <p className="font-semibold">Item: {item.title}</p>
-              <p className="text-sm">Tipo: {item.type}</p>
-              <p className="text-sm">Status: {item.status}</p>
-            </div>
-          )}
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label
-                htmlFor="recipient-email"
-                className="block text-zinc-700 text-sm font-bold mb-2"
-              >
-                Email do Destinatário:
-              </label>
-              <input
-                type="email"
-                id="recipient-email"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 leading-tight focus:outline-none focus:shadow-outline"
-                value={recipientEmail}
-                onChange={(e) => setRecipientEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label
-                htmlFor="email-subject"
-                className="block text-zinc-700 text-sm font-bold mb-2"
-              >
-                Assunto:
-              </label>
-              <input
-                type="text"
-                id="email-subject"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 leading-tight focus:outline-none focus:shadow-outline"
-                value={emailSubject}
-                onChange={(e) => setEmailSubject(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-6">
-              <label
-                htmlFor="email-body"
-                className="block text-zinc-700 text-sm font-bold mb-2"
-              >
-                Corpo do Email:
-              </label>
-              <textarea
-                id="email-body"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 leading-tight focus:outline-none focus:shadow-outline h-32"
-                value={emailBody}
-                onChange={(e) => setEmailBody(e.target.value)}
-                required
-              ></textarea>
-            </div>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                Enviar Email
-              </button>
-            </div>
-          </form>
-        </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+        <h2 className="text-2xl font-bold text-zinc-800 mb-4">
+          Encaminhar por Email
+        </h2>
+        {item && (
+          <div className="mb-4 text-zinc-700">
+            <p className="font-semibold">Item: {item.title}</p>
+            <p className="text-sm">Tipo: {item.type}</p>
+            <p className="text-sm">Status: {item.status}</p>
+          </div>
+        )}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label
+              htmlFor="recipient-email"
+              className="block text-zinc-700 text-sm font-bold mb-2"
+            >
+              Email do Destinatário:
+            </label>
+            <input
+              type="email"
+              id="recipient-email"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 leading-tight focus:outline-none focus:shadow-outline"
+              value={recipientEmail}
+              onChange={(e) => setRecipientEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              htmlFor="email-subject"
+              className="block text-zinc-700 text-sm font-bold mb-2"
+            >
+              Assunto:
+            </label>
+            <input
+              type="text"
+              id="email-subject"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 leading-tight focus:outline-none focus:shadow-outline"
+              value={emailSubject}
+              onChange={(e) => setEmailSubject(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-6">
+            <label
+              htmlFor="email-body"
+              className="block text-zinc-700 text-sm font-bold mb-2"
+            >
+              Corpo do Email:
+            </label>
+            <textarea
+              id="email-body"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 leading-tight focus:outline-none focus:shadow-outline h-32"
+              value={emailBody}
+              onChange={(e) => setEmailBody(e.target.value)}
+              required
+            ></textarea>
+          </div>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Enviar Email
+            </button>
+          </div>
+        </form>
       </div>
-    </AuthWrapper>
+    </div>
   );
 };
 
+// Componente Principal
 export default function AdminDashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
   // Estados locais para os filtros
-  const [activeLinkLocal, setActiveLinkLocal] = useState("Exibir tudo");
-  const [selectedDateLocal, setSelectedDateLocal] = useState("");
-  const [selectedStatusLocal, setSelectedStatusLocal] = useState("");
+  const [filterState, setFilterState] = useState({
+    activeLink: "Exibir tudo", // Pode ser 'Denúncias', 'Solicitações', 'Exibir tudo', 'Gerenciar Usuários'
+    date: "",
+    status: "",
+  });
 
-  // --- Novos estados para o Modal de Email ---
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [selectedItemForEmail, setSelectedItemForEmail] = useState(null);
-  // --- Fim dos novos estados ---
 
-  // Dados de histórico/chamados para o administrador (Atualizados com 'id' para uso)
   const [historyItems, setHistoryItems] = useState([
     {
       id: 1,
@@ -212,193 +211,193 @@ export default function AdminDashboardPage() {
     },
   ]);
 
+  // Função auxiliar para obter o tipo de filtro da URL (ajustada para admin)
+  const getTypeParamFromActiveLink = useCallback((activeLink) => {
+    if (activeLink === "Denúncias") return "denuncia";
+    if (activeLink === "Solicitações") return "solicitacao";
+    // O link "Gerenciar Usuários" não usa o parâmetro 'type'
+    return ""; // Para "Exibir tudo"
+  }, []);
+
+  // Função auxiliar para atualizar os parâmetros da URL
+  const updateUrlParams = useCallback(
+    (newParams) => {
+      const currentParams = new URLSearchParams(searchParams.toString());
+      Object.keys(newParams).forEach((key) => {
+        if (newParams[key]) {
+          currentParams.set(key, newParams[key]);
+        } else {
+          currentParams.delete(key);
+        }
+      });
+      // Importante: para /admin/users, a URL não terá parâmetros de tipo/data/status
+      if (pathname === "/admin/users") {
+        router.push(`${pathname}`, { shallow: true });
+      } else {
+        router.push(`${pathname}?${currentParams.toString()}`, {
+          shallow: true,
+        });
+      }
+    },
+    [searchParams, router, pathname]
+  );
+
   // Sincroniza estados locais com a URL no carregamento ou mudança da URL
   useEffect(() => {
     const urlType = searchParams.get("type");
     const urlDate = searchParams.get("date");
     const urlStatus = searchParams.get("status");
 
-    let newActiveLink = "Exibir tudo";
+    let newActiveLink = "Exibir tudo"; // Padrão para admin
     if (urlType === "denuncia") {
       newActiveLink = "Denúncias";
     } else if (urlType === "solicitacao") {
       newActiveLink = "Solicitações";
-    } else if (urlType === "usuarios") {
+    } else if (pathname === "/admin/users") {
+      // Se estiver na página de usuários
       newActiveLink = "Gerenciar Usuários";
     }
-    setActiveLinkLocal(newActiveLink);
-    setSelectedDateLocal(urlDate || "");
-    setSelectedStatusLocal(urlStatus || "");
-  }, [searchParams]);
 
-  // Função auxiliar para atualizar os parâmetros da URL
-  const updateUrlParams = (newParams) => {
-    const currentParams = new URLSearchParams(searchParams.toString());
-    Object.keys(newParams).forEach((key) => {
-      if (newParams[key]) {
-        currentParams.set(key, newParams[key]);
-      } else {
-        currentParams.delete(key);
-      }
+    setFilterState({
+      activeLink: newActiveLink,
+      date: urlDate || "",
+      status: urlStatus || "",
     });
-    router.push(`${pathname}?${currentParams.toString()}`, { shallow: true });
-  };
+  }, [searchParams, pathname]); // Adicione pathname nas dependências
 
-  const handleDateFilterChange = (e) => {
-    const newDate = e.target.value;
-    setSelectedDateLocal(newDate);
-    const currentUrlType = searchParams.get("type");
-    updateUrlParams({
-      type: currentUrlType,
-      date: newDate,
-      status: selectedStatusLocal,
-    });
-  };
+  // Função genérica para mudar qualquer filtro e atualizar a URL
+  const handleFilterChange = useCallback(
+    (filterName, value) => {
+      setFilterState((prevState) => {
+        const newState = { ...prevState, [filterName]: value };
+        let typeValue = getTypeParamFromActiveLink(newState.activeLink);
 
-  const handleStatusFilterChange = (e) => {
-    const newStatus = e.target.value;
-    setSelectedStatusLocal(newStatus);
-    const currentUrlType = searchParams.get("type");
-    updateUrlParams({
-      type: currentUrlType,
-      date: selectedDateLocal,
-      status: newStatus,
-    });
-  };
+        // Se a mudança for no activeLink (tipo de filtro), precisamos recalcular o typeValue
+        if (filterName === "activeLink") {
+          typeValue = getTypeParamFromActiveLink(value);
+          // Se for "Gerenciar Usuários", navega para /admin/users
+          if (value === "Gerenciar Usuários") {
+            router.push("/admin/users", { shallow: true });
+            return { activeLink: "Gerenciar Usuários", date: "", status: "" }; // Limpa outros filtros
+          }
+        }
+        updateUrlParams({
+          type: typeValue,
+          date: newState.date,
+          status: newState.status,
+        });
+        return newState;
+      });
+    },
+    [getTypeParamFromActiveLink, updateUrlParams, router]
+  );
 
-  const clearDateFilter = () => {
-    setSelectedDateLocal("");
-    const currentUrlType = searchParams.get("type");
-    updateUrlParams({
-      type: currentUrlType,
-      date: "",
-      status: selectedStatusLocal,
-    });
-  };
+  const handleDateFilterChange = useCallback(
+    (e) => {
+      handleFilterChange("date", e.target.value);
+    },
+    [handleFilterChange]
+  );
 
-  const clearStatusFilter = () => {
-    setSelectedStatusLocal("");
-    const currentUrlType = searchParams.get("type");
-    updateUrlParams({
-      type: currentUrlType,
-      date: selectedDateLocal,
-      status: "",
-    });
-  };
+  const handleStatusFilterChange = useCallback(
+    (e) => {
+      handleFilterChange("status", e.target.value);
+    },
+    [handleFilterChange]
+  );
 
-  // --- Funções de ação do administrador (Atualizadas) ---
-  const updateItemStatus = (id, newStatus) => {
+  const clearFilter = useCallback(
+    (filterName) => {
+      handleFilterChange(filterName, "");
+    },
+    [handleFilterChange]
+  );
+
+  // --- Funções de ação do administrador (com useCallback) ---
+  const updateItemStatus = useCallback((id, newStatus) => {
     setHistoryItems((prevItems) =>
       prevItems.map((item) =>
         item.id === id ? { ...item, status: newStatus } : item
       )
     );
-  };
+  }, []);
 
-  const handleMoveToAnalysis = (id) => {
-    updateItemStatus(id, "em análise");
-    alert(`Item ${id} movido para 'em análise'!`);
-  };
+  const handleMoveToAnalysis = useCallback(
+    (id) => {
+      updateItemStatus(id, "em análise");
+      alert(`Item ${id} movido para 'em análise'!`);
+    },
+    [updateItemStatus]
+  );
 
-  const handleEditStatus = (id) => {
-    const newStatus = prompt(
-      `Editar status do item ${id}. Digite o novo status (recebido, em análise, encaminhado, completo):`
-    );
-    if (newStatus) {
-      updateItemStatus(id, newStatus.toLowerCase()); // Certifica que o status é minúsculo
-      alert(`Status do item ${id} alterado para: ${newStatus}!`);
-    }
-  };
+  const handleEditStatus = useCallback(
+    (id) => {
+      const newStatus = prompt(
+        `Editar status do item ${id}. Digite o novo status (recebido, em análise, encaminhado, completo):`
+      );
+      if (newStatus) {
+        updateItemStatus(id, newStatus.toLowerCase());
+        alert(`Status do item ${id} alterado para: ${newStatus}!`);
+      }
+    },
+    [updateItemStatus]
+  );
 
-  const handleForward = (id) => {
-    const itemToForward = historyItems.find((item) => item.id === id);
-    setSelectedItemForEmail(itemToForward);
-    setIsEmailModalOpen(true);
-  };
+  const handleForward = useCallback(
+    (id) => {
+      const itemToForward = historyItems.find((item) => item.id === id);
+      setSelectedItemForEmail(itemToForward);
+      setIsEmailModalOpen(true);
+    },
+    [historyItems]
+  );
 
-  const handleSendEmail = (id, recipientEmail, subject, body) => {
-    // Aqui você enviaria o email de fato, provavelmente via uma API
-    console.log(
-      `Simulando envio de email para: ${recipientEmail}\nAssunto: ${subject}\nCorpo: ${body}`
-    );
-    alert(`Email para ${recipientEmail} enviado com sucesso! (Simulação)`);
-    updateItemStatus(id, "encaminhado"); // Muda o status para 'encaminhado' após o envio
-    setIsEmailModalOpen(false);
-    setSelectedItemForEmail(null); // Limpa o item selecionado
-  };
-
-  const handleLogout = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("authToken");
-    }
-    alert("Sessão encerrada! Redirecionando para o login...");
-    router.push("/login");
-  };
+  const handleSendEmail = useCallback(
+    (id, recipientEmail, subject, body) => {
+      console.log(
+        `Simulando envio de email para: ${recipientEmail}\nAssunto: ${subject}\nCorpo: ${body}`
+      );
+      alert(`Email para ${recipientEmail} enviado com sucesso! (Simulação)`);
+      updateItemStatus(id, "encaminhado");
+      setIsEmailModalOpen(false);
+      setSelectedItemForEmail(null);
+    },
+    [updateItemStatus]
+  );
   // --- Fim das funções de ação do administrador ---
 
-  const getLinkClasses = (linkName) =>
-    `flex items-center p-3 rounded-md text-sm font-semibold transition-colors
-    ${
-      activeLinkLocal === linkName
-        ? "bg-zinc-800 text-white"
-        : "text-zinc-800 hover:bg-zinc-300"
-    }`;
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "recebido":
-        return "bg-blue-500 text-white";
-      case "em análise":
-        return "bg-yellow-500 text-white";
-      case "encaminhado":
-        return "bg-orange-500 text-white";
-      case "completo":
-        return "bg-green-500 text-white";
-      default:
-        return "bg-gray-500 text-white";
-    }
-  };
-
-  const getSubTypeColor = (subType) => {
-    switch (subType) {
-      case "psicológica":
-        return "bg-pink-500 text-white";
-      case "jurídica":
-        return "bg-indigo-500 text-white";
-      default:
-        return "bg-gray-400 text-white";
-    }
-  };
-
-  // Lógica de filtragem dos itens
+  // Lógica de filtragem dos itens (agora usando filterState)
   const filteredItems = useMemo(() => {
     let items = historyItems;
-    const urlTypeParam = searchParams.get("type");
+    const urlTypeParam = searchParams.get("type"); // Ainda usamos o searchParams para o tipo
+
+    // Se a página for /admin/users, não exibe itens de histórico
+    if (pathname === "/admin/users") {
+      return [];
+    }
 
     if (urlTypeParam === "denuncia") {
       items = items.filter((item) => item.type === "Denúncia");
     } else if (urlTypeParam === "solicitacao") {
       items = items.filter((item) => item.type === "Solicitação");
-    } else if (urlTypeParam === "usuarios") {
-      return [];
     }
 
-    if (selectedDateLocal) {
-      items = items.filter((item) => item.date === selectedDateLocal);
+    if (filterState.date) {
+      items = items.filter((item) => item.date === filterState.date);
     }
 
-    if (selectedStatusLocal) {
-      items = items.filter((item) => item.status === selectedStatusLocal);
+    if (filterState.status) {
+      items = items.filter((item) => item.status === filterState.status);
     }
 
     return items;
-  }, [historyItems, selectedDateLocal, selectedStatusLocal, searchParams]);
-
-  const formatDateForDisplay = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  };
+  }, [
+    historyItems,
+    filterState.date,
+    filterState.status,
+    searchParams,
+    pathname,
+  ]);
 
   const allPossibleStatuses = useMemo(() => {
     const statuses = new Set(historyItems.map((item) => item.status));
@@ -408,7 +407,8 @@ export default function AdminDashboardPage() {
   return (
     <AuthWrapper>
       <div className="min-h-screen bg-zinc-900 flex">
-        <Sidebar />
+        {/* Passe a prop isAdmin={true} para renderizar a versão de admin da Sidebar */}
+        <Sidebar isAdmin={true} />
 
         {/* Conteúdo Principal */}
         <main className="flex-1 p-8">
@@ -417,8 +417,8 @@ export default function AdminDashboardPage() {
               Painel Administrativo
             </h1>
 
-            {/* Filtros visíveis apenas se não for a página de Gerenciar Usuários */}
-            {activeLinkLocal !== "Gerenciar Usuários" && (
+            {/* Filtros visíveis apenas se NÃO for a página de Gerenciar Usuários */}
+            {pathname !== "/admin/users" && (
               <div className="flex flex-col sm:flex-row gap-4">
                 {/* Filtro de Data */}
                 <div className="flex items-center bg-zinc-800 p-3 rounded-md shadow-md">
@@ -431,13 +431,13 @@ export default function AdminDashboardPage() {
                   <input
                     type="date"
                     id="date-filter"
-                    value={selectedDateLocal}
+                    value={filterState.date}
                     onChange={handleDateFilterChange}
                     className="px-3 py-2 rounded-md bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                  {selectedDateLocal && (
+                  {filterState.date && (
                     <button
-                      onClick={clearDateFilter}
+                      onClick={() => clearFilter("date")}
                       className="ml-4 px-3 py-2 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition whitespace-nowrap"
                     >
                       Limpar
@@ -449,13 +449,13 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center bg-zinc-800 p-3 rounded-md shadow-md">
                   <label
                     htmlFor="status-filter"
-                    className="text-white text-md font-semibold mr-3 whitespace-nowrap"
+                    className="block text-white text-md font-semibold mr-3 whitespace-nowrap"
                   >
                     Status:
                   </label>
                   <select
                     id="status-filter"
-                    value={selectedStatusLocal}
+                    value={filterState.status}
                     onChange={handleStatusFilterChange}
                     className="px-3 py-2 rounded-md bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
                   >
@@ -469,9 +469,9 @@ export default function AdminDashboardPage() {
                         )
                     )}
                   </select>
-                  {selectedStatusLocal && (
+                  {filterState.status && (
                     <button
-                      onClick={clearStatusFilter}
+                      onClick={() => clearFilter("status")}
                       className="ml-4 px-3 py-2 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition whitespace-nowrap"
                     >
                       Limpar
@@ -482,8 +482,8 @@ export default function AdminDashboardPage() {
             )}
           </div>
 
-          {/* Conteúdo dinâmico baseado no activeLinkLocal (URL type param) */}
-          {activeLinkLocal === "Gerenciar Usuários" ? (
+          {/* Conteúdo dinâmico baseado no pathname (Gerenciar Usuários vs. Histórico) */}
+          {pathname === "/admin/users" ? (
             <div className="text-white text-center p-8 border border-zinc-700 rounded-lg">
               <h2 className="text-2xl font-bold mb-4">
                 Gerenciamento de Usuários
@@ -497,109 +497,50 @@ export default function AdminDashboardPage() {
           ) : filteredItems.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-zinc-100 p-6 rounded-xl shadow-md flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold
-                      ${
-                        item.type === "Denúncia"
-                          ? "bg-red-500 text-white"
-                          : "bg-blue-500 text-white"
-                      }
-                    `}
-                      >
-                        {item.type}
-                      </span>
-                      {item.type === "Solicitação" && item.subType && (
-                        <span
-                          className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize
-                        ${getSubTypeColor(item.subType)}
-                      `}
+                <HistoryCard key={item.id} item={item}>
+                  {item.status !== "completo" ? (
+                    <>
+                      {/* Botão "Mover para em análise" */}
+                      {item.status === "recebido" && (
+                        <button
+                          className="flex items-center justify-center bg-gray-700 text-white py-2 px-4 rounded-md font-semibold hover:bg-gray-800 transition"
+                          onClick={() => handleMoveToAnalysis(item.id)}
                         >
-                          {item.subType}
-                        </span>
+                          <FiLoader className="mr-2" />
+                          Mover para em análise
+                        </button>
                       )}
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize
-                      ${getStatusColor(item.status)}
-                    `}
+
+                      {/* Botão "Editar status" */}
+                      <button
+                        className="flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-blue-700 transition"
+                        onClick={() => handleEditStatus(item.id)}
                       >
-                        {item.status}
-                      </span>
-                    </div>
+                        <FiEdit className="mr-2" />
+                        Editar status
+                      </button>
 
-                    <h2 className="text-xl font-bold text-zinc-800 mb-2">
-                      {item.title}
-                    </h2>
-                    <p className="text-zinc-700 text-sm mb-4">
-                      {item.description}
-                    </p>
-
-                    <div className="flex items-center text-zinc-700 text-sm mb-2">
-                      <FiCalendar className="mr-2 text-base" />
-                      <span>Data: {formatDateForDisplay(item.date)}</span>
-                    </div>
-
-                    {item.type === "Denúncia" && item.location && (
-                      <div className="flex items-center text-zinc-700 text-sm">
-                        <FiMapPin className="mr-2 text-base" />
-                        <span>Local: {item.location}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-4 flex flex-col gap-2">
-                    {/* Botões de ação do administrador */}
-                    {item.status !== "completo" && (
-                      <>
-                        {/* Botão "Mover para em análise" */}
-                        {item.status === "recebido" && (
-                          <button
-                            className="flex items-center justify-center bg-gray-700 text-white py-2 px-4 rounded-md font-semibold hover:bg-gray-800 transition"
-                            onClick={() => handleMoveToAnalysis(item.id)}
-                          >
-                            <FiLoader className="mr-2" />
-                            Mover para em análise
-                          </button>
-                        )}
-
-                        {/* Botão "Editar status" */}
-                        <button
-                          className="flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-blue-700 transition"
-                          onClick={() => handleEditStatus(item.id)}
-                        >
-                          <FiEdit className="mr-2" />
-                          Editar status
-                        </button>
-
-                        {/* Botão "Encaminhar" */}
-                        <button
-                          className="flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-purple-700 transition"
-                          onClick={() => handleForward(item.id)}
-                        >
-                          <FiShare2 className="mr-2" />
-                          Encaminhar
-                        </button>
-                      </>
-                    )}
-                    {item.status === "completo" && (
-                      <span className="text-center border-2 border-green-500 text-green-500 py-2 px-4 rounded-md font-semibold mt-4">
-                        Resolvido
-                      </span>
-                    )}
-                  </div>
-                </div>
+                      {/* Botão "Encaminhar" */}
+                      <button
+                        className="flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-purple-700 transition"
+                        onClick={() => handleForward(item.id)}
+                      >
+                        <FiShare2 className="mr-2" />
+                        Encaminhar
+                      </button>
+                    </>
+                  ) : (
+                    <span className="text-center border-2 border-green-500 text-green-500 py-2 px-4 rounded-md font-semibold mt-4">
+                      Resolvido
+                    </span>
+                  )}
+                </HistoryCard>
               ))}
             </div>
           ) : (
-            activeLinkLocal !== "Gerenciar Usuários" && (
-              <p className="text-white text-lg col-span-full text-center">
-                Nenhum item encontrado para o filtro selecionado.
-              </p>
-            )
+            <p className="text-white text-lg col-span-full text-center">
+              Nenhum item encontrado para o filtro selecionado.
+            </p>
           )}
         </main>
 
