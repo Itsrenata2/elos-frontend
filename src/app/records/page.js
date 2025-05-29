@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import AuthWrapper from "../../components/AuthWrapper";
 import { useState, useMemo, useEffect } from "react";
 import {
   FiPlus,
@@ -249,6 +250,9 @@ export default function HistoryPage() {
   };
 
   const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("authToken");
+    }
     alert("Sessão encerrada! Redirecionando para o login...");
     router.push("/login");
   };
@@ -358,224 +362,229 @@ export default function HistoryPage() {
   }, [historyItems]);
 
   return (
-    <div className="min-h-screen bg-zinc-900 flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-zinc-100 p-6 flex flex-col shadow-md">
-        <div>
-          <div className="mb-8">
-            <img
-              src="/logo-elos.svg"
-              alt="Elos Logo"
-              className="h-10 mx-auto"
-            />
-          </div>
-          <nav className="space-y-2">
-            <Link
-              href="/complaints"
-              onClick={() => router.push("/complaints")}
-              className={getLinkClasses("/complaints", "Nova denúncia")}
-            >
-              <FiPlus className="mr-3 text-lg" />
-              Nova denúncia
-            </Link>
-            <Link
-              href="/records?type=denuncia"
-              onClick={() => handleTypeFilterChange("Denúncias feitas")}
-              className={getLinkClasses(
-                "/records?type=denuncia",
-                "Denúncias feitas"
-              )}
-            >
-              <FiList className="mr-3 text-lg" />
-              Denúncias feitas
-            </Link>
-            <div className="border-t border-zinc-300 my-4"></div>
-            <Link
-              href="/new-solicitacao"
-              onClick={() => router.push("/new-solicitacao")}
-              className={getLinkClasses("/new-solicitacao", "Nova solicitação")}
-            >
-              <FiPlus className="mr-3 text-lg" />
-              Nova solicitação
-            </Link>
-            <Link
-              href="/records?type=solicitacao"
-              onClick={() => handleTypeFilterChange("Solicitações feitas")}
-              className={getLinkClasses(
-                "/records?type=solicitacao",
-                "Solicitações feitas"
-              )}
-            >
-              <FiList className="mr-3 text-lg" />
-              Solicitações feitas
-            </Link>
-            <div className="border-t border-zinc-300 my-4"></div>
-            <Link
-              href="/records"
-              onClick={() => handleTypeFilterChange("Exibir tudo")}
-              className={getLinkClasses("/records", "Exibir tudo")}
-            >
-              <FiList className="mr-3 text-lg" />
-              Exibir tudo
-            </Link>
-          </nav>
-        </div>
-
-        <button
-          onClick={handleLogout}
-          className="mt-auto flex items-center p-3 rounded-md text-sm font-semibold transition-colors bg-zinc-700 text-white hover:bg-zinc-800"
-        >
-          <FiLogOut className="mr-3 text-lg" />
-          Sair
-        </button>
-      </aside>
-
-      <main className="flex-1 p-8">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-white mb-4 md:mb-0">
-            Histórico
-          </h1>
-
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex items-center bg-zinc-800 p-3 rounded-md shadow-md">
-              <label
-                htmlFor="date-filter"
-                className="text-white text-md font-semibold mr-3 whitespace-nowrap"
-              >
-                Data:
-              </label>
-              <input
-                type="date"
-                id="date-filter"
-                value={selectedDateLocal}
-                onChange={handleDateFilterChange}
-                className="px-3 py-2 rounded-md bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+    <AuthWrapper>
+      <div className="min-h-screen bg-zinc-900 flex">
+        {/* Sidebar */}
+        <aside className="w-64 bg-zinc-100 p-6 flex flex-col shadow-md">
+          <div>
+            <div className="mb-8">
+              <img
+                src="/logo-elos.svg"
+                alt="Elos Logo"
+                className="h-10 mx-auto"
               />
-              {selectedDateLocal && (
-                <button
-                  onClick={clearDateFilter}
-                  className="ml-4 px-3 py-2 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition whitespace-nowrap"
-                >
-                  Limpar
-                </button>
-              )}
             </div>
-
-            <div className="flex items-center bg-zinc-800 p-3 rounded-md shadow-md">
-              <label
-                htmlFor="status-filter"
-                className="text-white text-md font-semibold mr-3 whitespace-nowrap"
+            <nav className="space-y-2">
+              <Link
+                href="/complaints"
+                onClick={() => router.push("/complaints")}
+                className={getLinkClasses("/complaints", "Nova denúncia")}
               >
-                Status:
-              </label>
-              <select
-                id="status-filter"
-                value={selectedStatusLocal}
-                onChange={handleStatusFilterChange}
-                className="px-3 py-2 rounded-md bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-              >
-                <option value="">Todos</option>
-                {allPossibleStatuses.map(
-                  (status) =>
-                    status && (
-                      <option key={status} value={status}>
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                      </option>
-                    )
+                <FiPlus className="mr-3 text-lg" />
+                Nova denúncia
+              </Link>
+              <Link
+                href="/records?type=denuncia"
+                onClick={() => handleTypeFilterChange("Denúncias feitas")}
+                className={getLinkClasses(
+                  "/records?type=denuncia",
+                  "Denúncias feitas"
                 )}
-              </select>
-              {selectedStatusLocal && (
-                <button
-                  onClick={clearStatusFilter}
-                  className="ml-4 px-3 py-2 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition whitespace-nowrap"
+              >
+                <FiList className="mr-3 text-lg" />
+                Denúncias feitas
+              </Link>
+              <div className="border-t border-zinc-300 my-4"></div>
+              <Link
+                href="/new-solicitacao"
+                onClick={() => router.push("/new-solicitacao")}
+                className={getLinkClasses(
+                  "/new-solicitacao",
+                  "Nova solicitação"
+                )}
+              >
+                <FiPlus className="mr-3 text-lg" />
+                Nova solicitação
+              </Link>
+              <Link
+                href="/records?type=solicitacao"
+                onClick={() => handleTypeFilterChange("Solicitações feitas")}
+                className={getLinkClasses(
+                  "/records?type=solicitacao",
+                  "Solicitações feitas"
+                )}
+              >
+                <FiList className="mr-3 text-lg" />
+                Solicitações feitas
+              </Link>
+              <div className="border-t border-zinc-300 my-4"></div>
+              <Link
+                href="/records"
+                onClick={() => handleTypeFilterChange("Exibir tudo")}
+                className={getLinkClasses("/records", "Exibir tudo")}
+              >
+                <FiList className="mr-3 text-lg" />
+                Exibir tudo
+              </Link>
+            </nav>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="mt-auto flex items-center p-3 rounded-md text-sm font-semibold transition-colors bg-zinc-700 text-white hover:bg-zinc-800"
+          >
+            <FiLogOut className="mr-3 text-lg" />
+            Sair
+          </button>
+        </aside>
+
+        <main className="flex-1 p-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold text-white mb-4 md:mb-0">
+              Histórico
+            </h1>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex items-center bg-zinc-800 p-3 rounded-md shadow-md">
+                <label
+                  htmlFor="date-filter"
+                  className="text-white text-md font-semibold mr-3 whitespace-nowrap"
                 >
-                  Limpar
-                </button>
-              )}
+                  Data:
+                </label>
+                <input
+                  type="date"
+                  id="date-filter"
+                  value={selectedDateLocal}
+                  onChange={handleDateFilterChange}
+                  className="px-3 py-2 rounded-md bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {selectedDateLocal && (
+                  <button
+                    onClick={clearDateFilter}
+                    className="ml-4 px-3 py-2 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition whitespace-nowrap"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center bg-zinc-800 p-3 rounded-md shadow-md">
+                <label
+                  htmlFor="status-filter"
+                  className="text-white text-md font-semibold mr-3 whitespace-nowrap"
+                >
+                  Status:
+                </label>
+                <select
+                  id="status-filter"
+                  value={selectedStatusLocal}
+                  onChange={handleStatusFilterChange}
+                  className="px-3 py-2 rounded-md bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                >
+                  <option value="">Todos</option>
+                  {allPossibleStatuses.map(
+                    (status) =>
+                      status && (
+                        <option key={status} value={status}>
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </option>
+                      )
+                  )}
+                </select>
+                {selectedStatusLocal && (
+                  <button
+                    onClick={clearStatusFilter}
+                    className="ml-4 px-3 py-2 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition whitespace-nowrap"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.length > 0 ? (
-            filteredItems.map((item) => (
-              <div
-                key={item.id}
-                className="bg-zinc-100 p-6 rounded-xl shadow-md flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredItems.length > 0 ? (
+              filteredItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-zinc-100 p-6 rounded-xl shadow-md flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold
                       ${
                         item.type === "Denúncia"
                           ? "bg-red-500 text-white"
                           : "bg-blue-500 text-white"
                       }
                     `}
-                    >
-                      {item.type}
-                    </span>
-                    {item.type === "Solicitação" && item.subType && (
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize
+                      >
+                        {item.type}
+                      </span>
+                      {item.type === "Solicitação" && item.subType && (
+                        <span
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize
                         ${getSubTypeColor(item.subType)}
                       `}
-                      >
-                        {item.subType}
-                      </span>
-                    )}
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize
+                        >
+                          {item.subType}
+                        </span>
+                      )}
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize
                       ${getStatusColor(item.status)}
                     `}
-                    >
-                      {item.status}
-                    </span>
-                  </div>
-
-                  <h2 className="text-xl font-bold text-zinc-800 mb-2">
-                    {item.title}
-                  </h2>
-                  <p className="text-zinc-700 text-sm mb-4">
-                    {item.description}
-                  </p>
-
-                  <div className="flex items-center text-zinc-700 text-sm mb-2">
-                    <FiCalendar className="mr-2 text-base" />
-                    <span>Data: {formatDateForDisplay(item.date)}</span>
-                  </div>
-
-                  {item.type === "Denúncia" && item.location && (
-                    <div className="flex items-center text-zinc-700 text-sm">
-                      <FiMapPin className="mr-2 text-base" />
-                      <span>Local: {item.location}</span>
+                      >
+                        {item.status}
+                      </span>
                     </div>
+
+                    <h2 className="text-xl font-bold text-zinc-800 mb-2">
+                      {item.title}
+                    </h2>
+                    <p className="text-zinc-700 text-sm mb-4">
+                      {item.description}
+                    </p>
+
+                    <div className="flex items-center text-zinc-700 text-sm mb-2">
+                      <FiCalendar className="mr-2 text-base" />
+                      <span>Data: {formatDateForDisplay(item.date)}</span>
+                    </div>
+
+                    {item.type === "Denúncia" && item.location && (
+                      <div className="flex items-center text-zinc-700 text-sm">
+                        <FiMapPin className="mr-2 text-base" />
+                        <span>Local: {item.location}</span>
+                      </div>
+                    )}
+                  </div>
+                  {item.status !== "completo" && (
+                    <button
+                      className="flex items-center justify-center bg-zinc-900 text-white py-2 px-4 rounded-md font-semibold hover:bg-zinc-800 transition mt-4"
+                      onClick={() => handleMarkAsComplete(item.id)}
+                    >
+                      <FiCheckCircle className="mr-2" />
+                      Marcar como completo
+                    </button>
+                  )}
+                  {item.status === "completo" && (
+                    <span className="text-center border-2 border-green-500 text-green-500 py-2 px-4 rounded-md font-semibold mt-4">
+                      Resolvido
+                    </span>
                   )}
                 </div>
-                {item.status !== "completo" && (
-                  <button
-                    className="flex items-center justify-center bg-zinc-900 text-white py-2 px-4 rounded-md font-semibold hover:bg-zinc-800 transition mt-4"
-                    onClick={() => handleMarkAsComplete(item.id)}
-                  >
-                    <FiCheckCircle className="mr-2" />
-                    Marcar como completo
-                  </button>
-                )}
-                {item.status === "completo" && (
-                  <span className="text-center border-2 border-green-500 text-green-500 py-2 px-4 rounded-md font-semibold mt-4">
-                    Resolvido
-                  </span>
-                )}
-              </div>
-            ))
-          ) : (
-            <p className="text-white text-lg col-span-full text-center">
-              Nenhum item encontrado para o filtro selecionado.
-            </p>
-          )}
-        </div>
-      </main>
-    </div>
+              ))
+            ) : (
+              <p className="text-white text-lg col-span-full text-center">
+                Nenhum item encontrado para o filtro selecionado.
+              </p>
+            )}
+          </div>
+        </main>
+      </div>
+    </AuthWrapper>
   );
 }
