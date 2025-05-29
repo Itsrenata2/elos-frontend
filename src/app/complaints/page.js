@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import AuthWrapper from "../../components/AuthWrapper";
+import Sidebar from "../../components/Sidebar";
 import { FiPlus, FiList, FiLogOut, FiUploadCloud } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 
@@ -87,65 +88,7 @@ export default function NovaDenunciaPage() {
   return (
     <AuthWrapper>
       <div className="min-h-screen bg-zinc-900 flex">
-        {/* Sidebar */}
-        <aside className="w-64 bg-zinc-100 p-6 flex flex-col shadow-md">
-          <div>
-            <div className="mb-8">
-              <img
-                src="/logo-elos.svg"
-                alt="Elos Logo"
-                className="h-10 mx-auto"
-              />
-            </div>
-            <nav className="space-y-2">
-              <Link
-                href="/complaints"
-                onClick={() => router.push("/complaints")}
-                className={getLinkClasses("/complaints")}
-              >
-                <FiPlus className="mr-3 text-lg" />
-                Nova denúncia
-              </Link>
-              <Link
-                href="/records?type=denuncia" // Changed from /history to /records
-                className={getLinkClasses("/records?type=denuncia")} // Changed from /history to /records
-              >
-                <FiList className="mr-3 text-lg" />
-                Denúncias feitas
-              </Link>
-              <div className="border-t border-zinc-300 my-4"></div>
-              <Link
-                href="/new-solicitacao"
-                className={getLinkClasses("/new-solicitacao")}
-              >
-                <FiPlus className="mr-3 text-lg" />
-                Nova solicitação
-              </Link>
-              <Link
-                href="/records?type=solicitacao" // Changed from /history to /records
-                className={getLinkClasses("/records?type=solicitacao")} // Changed from /history to /records
-              >
-                <FiList className="mr-3 text-lg" />
-                Solicitações feitas
-              </Link>
-              <div className="border-t border-zinc-300 my-4"></div>
-              <Link href="/records" className={getLinkClasses("/records")}>
-                {" "}
-                {/* Changed from /history to /records */}
-                <FiList className="mr-3 text-lg" />
-                Exibir tudo
-              </Link>
-            </nav>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="mt-auto flex items-center p-3 rounded-md text-sm font-semibold transition-colors bg-zinc-700 text-white hover:bg-zinc-800"
-          >
-            <FiLogOut className="mr-3 text-lg" />
-            Sair
-          </button>
-        </aside>
-
+        <Sidebar />
         {/* Main Content - Form for New Complaint */}
         <main className="flex-1 p-8">
           <div className="bg-white rounded-lg shadow-md p-8">

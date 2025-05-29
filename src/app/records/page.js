@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import AuthWrapper from "../../components/AuthWrapper";
+import Sidebar from "../../components/Sidebar";
 import { useState, useMemo, useEffect } from "react";
 import {
   FiPlus,
@@ -364,79 +365,7 @@ export default function HistoryPage() {
   return (
     <AuthWrapper>
       <div className="min-h-screen bg-zinc-900 flex">
-        {/* Sidebar */}
-        <aside className="w-64 bg-zinc-100 p-6 flex flex-col shadow-md">
-          <div>
-            <div className="mb-8">
-              <img
-                src="/logo-elos.svg"
-                alt="Elos Logo"
-                className="h-10 mx-auto"
-              />
-            </div>
-            <nav className="space-y-2">
-              <Link
-                href="/complaints"
-                onClick={() => router.push("/complaints")}
-                className={getLinkClasses("/complaints", "Nova denúncia")}
-              >
-                <FiPlus className="mr-3 text-lg" />
-                Nova denúncia
-              </Link>
-              <Link
-                href="/records?type=denuncia"
-                onClick={() => handleTypeFilterChange("Denúncias feitas")}
-                className={getLinkClasses(
-                  "/records?type=denuncia",
-                  "Denúncias feitas"
-                )}
-              >
-                <FiList className="mr-3 text-lg" />
-                Denúncias feitas
-              </Link>
-              <div className="border-t border-zinc-300 my-4"></div>
-              <Link
-                href="/new-solicitacao"
-                onClick={() => router.push("/new-solicitacao")}
-                className={getLinkClasses(
-                  "/new-solicitacao",
-                  "Nova solicitação"
-                )}
-              >
-                <FiPlus className="mr-3 text-lg" />
-                Nova solicitação
-              </Link>
-              <Link
-                href="/records?type=solicitacao"
-                onClick={() => handleTypeFilterChange("Solicitações feitas")}
-                className={getLinkClasses(
-                  "/records?type=solicitacao",
-                  "Solicitações feitas"
-                )}
-              >
-                <FiList className="mr-3 text-lg" />
-                Solicitações feitas
-              </Link>
-              <div className="border-t border-zinc-300 my-4"></div>
-              <Link
-                href="/records"
-                onClick={() => handleTypeFilterChange("Exibir tudo")}
-                className={getLinkClasses("/records", "Exibir tudo")}
-              >
-                <FiList className="mr-3 text-lg" />
-                Exibir tudo
-              </Link>
-            </nav>
-          </div>
-
-          <button
-            onClick={handleLogout}
-            className="mt-auto flex items-center p-3 rounded-md text-sm font-semibold transition-colors bg-zinc-700 text-white hover:bg-zinc-800"
-          >
-            <FiLogOut className="mr-3 text-lg" />
-            Sair
-          </button>
-        </aside>
+        <Sidebar />
 
         <main className="flex-1 p-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">

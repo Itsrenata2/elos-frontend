@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import AuthWrapper from "../../components/AuthWrapper";
+import Sidebar from "../../components/Sidebar";
 import { useState, useMemo, useEffect } from "react";
 import {
   FiList,
@@ -407,62 +408,7 @@ export default function AdminDashboardPage() {
   return (
     <AuthWrapper>
       <div className="min-h-screen bg-zinc-900 flex">
-        {/* Sidebar */}
-        <aside className="w-64 bg-zinc-100 p-6 flex flex-col shadow-md">
-          <div>
-            <div className="mb-8">
-              <img
-                src="/logo-elos.svg"
-                alt="Elos Logo"
-                className="h-10 mx-auto"
-              />
-            </div>
-            <nav className="space-y-2">
-              <Link
-                href={{ pathname: pathname, query: { type: "denuncia" } }}
-                onClick={() => setActiveLinkLocal("Denúncias")}
-                className={getLinkClasses("Denúncias")}
-              >
-                <FiList className="mr-3 text-lg" />
-                Denúncias
-              </Link>
-              <Link
-                href={{ pathname: pathname, query: { type: "solicitacao" } }}
-                onClick={() => setActiveLinkLocal("Solicitações")}
-                className={getLinkClasses("Solicitações")}
-              >
-                <FiList className="mr-3 text-lg" />
-                Solicitações
-              </Link>
-              <div className="border-t border-zinc-300 my-4"></div>
-              <Link
-                href={{ pathname: pathname, query: { type: "usuarios" } }}
-                onClick={() => setActiveLinkLocal("Gerenciar Usuários")}
-                className={getLinkClasses("Gerenciar Usuários")}
-              >
-                <FiUsers className="mr-3 text-lg" />
-                Gerenciar Usuários
-              </Link>
-              <div className="border-t border-zinc-300 my-4"></div>
-              <Link
-                href={{ pathname: pathname, query: {} }}
-                onClick={() => setActiveLinkLocal("Exibir tudo")}
-                className={getLinkClasses("Exibir tudo")}
-              >
-                <FiList className="mr-3 text-lg" />
-                Exibir tudo
-              </Link>
-            </nav>
-          </div>
-
-          <button
-            onClick={handleLogout}
-            className="mt-auto flex items-center p-3 rounded-md text-sm font-semibold transition-colors bg-zinc-700 text-white hover:bg-zinc-800"
-          >
-            <FiLogOut className="mr-3 text-lg" />
-            Sair
-          </button>
-        </aside>
+        <Sidebar />
 
         {/* Conteúdo Principal */}
         <main className="flex-1 p-8">
