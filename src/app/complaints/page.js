@@ -1,10 +1,12 @@
+// pages/nova-denuncia/page.js
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "next/link"; // Link pode ser útil para navegação futura, mesmo que não usado diretamente no formulário
 import Sidebar from "../../components/Sidebar";
 import { FiPlus, FiList, FiLogOut, FiUploadCloud } from "react-icons/fi";
 import { useRouter } from "next/navigation";
+import { notify } from "../../utils/toastUtils"; // Importe seu utilitário de toast
 
 export default function NovaDenunciaPage() {
   const router = useRouter();
@@ -21,7 +23,10 @@ export default function NovaDenunciaPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!titulo || !tipo || !descricao || !arquivos || !concordaTermos) {
-      alert("Por favor, preencha todos os campos obrigatórios.");
+      // Substituído alert por notify.error
+      notify.error(
+        "Por favor, preencha todos os campos obrigatórios e anexe pelo menos um arquivo."
+      );
       return;
     }
     console.log({
@@ -35,7 +40,10 @@ export default function NovaDenunciaPage() {
       arquivos: arquivos ? Array.from(arquivos).map((file) => file.name) : [],
       concordaTermos,
     });
-    alert("Denúncia enviada com sucesso! (Simulação)");
+    // Substituído alert por notify.success
+    notify.success("Denúncia enviada com sucesso!");
+
+    // Limpar o formulário após o envio
     setTitulo("");
     setTipo("");
     setDescricao("");
@@ -70,6 +78,7 @@ export default function NovaDenunciaPage() {
 
   return (
     <div className="min-h-screen bg-zinc-900 flex">
+      {/* Certifique-se de que Sidebar esteja configurada para receber props corretas se necessário */}
       <Sidebar />
       {/* Main Content - Form for New Complaint */}
       <main className="flex-1 p-8">

@@ -1,20 +1,24 @@
+// pages/register/page.js
 "use client";
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react"; // Importe useState
+import { useState } from "react";
+import { notify } from "../../utils/toastUtils"; // Importe seu utilitário de toast
 
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  // Removendo o estado 'error' local, pois os erros serão exibidos via toast
+  // const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError("");
+    // Não precisamos mais limpar o estado de erro, pois o toast é efêmero
+    // setError("");
     setIsLoading(true);
     try {
       // **URL do endpoint de registro do seu NestJS**
@@ -25,7 +29,7 @@ export default function RegisterPage() {
         console.error(
           "Variável de ambiente NEXT_PUBLIC_API_URL_REGISTER não definida."
         );
-        setError(
+        notify.error(
           "Erro de configuração: URL do backend de registro não encontrada."
         );
         setIsLoading(false);
@@ -51,7 +55,7 @@ export default function RegisterPage() {
         data = JSON.parse(responseText);
       } catch (parseError) {
         console.error("Erro ao fazer JSON.parse da resposta:", parseError);
-        setError(
+        notify.error(
           "Erro inesperado na resposta do servidor. Consulte o console para mais detalhes."
         );
         setIsLoading(false);
@@ -59,7 +63,7 @@ export default function RegisterPage() {
       }
 
       if (response.ok) {
-        alert(
+        notify.success(
           "Cadastro realizado com sucesso! Faça login para acessar sua conta."
         );
         router.push("/login");
@@ -69,11 +73,11 @@ export default function RegisterPage() {
             ? data.message.join(", ")
             : data.message
           : "Erro ao criar conta. Verifique os dados e tente novamente.";
-        setError(errorMessage);
+        notify.error(errorMessage);
       }
     } catch (err) {
       console.error("Erro na requisição de registro:", err);
-      setError(
+      notify.error(
         "Não foi possível conectar ao servidor. Tente novamente mais tarde."
       );
     } finally {
@@ -130,7 +134,8 @@ export default function RegisterPage() {
               disabled={isLoading}
             />
           </div>
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {/* Removendo a exibição do erro aqui, pois será feita via toast */}
+          {/* {error && <p className="text-red-500 text-sm text-center">{error}</p>} */}
           <button
             type="submit"
             className="w-full bg-zinc-900 text-white py-3 rounded-md font-semibold hover:bg-zinc-800 transition"

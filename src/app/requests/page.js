@@ -1,10 +1,12 @@
+// pages/nova-solicitacao/page.js
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "next/link"; // Link ainda pode ser útil se você tiver navegação interna
 import Sidebar from "../../components/Sidebar";
-import { FiPlus, FiList, FiLogOut } from "react-icons/fi"; // FiUploadCloud não é necessário aqui
+import { FiPlus, FiList, FiLogOut } from "react-icons/fi";
 import { useRouter } from "next/navigation";
+import { notify } from "../../utils/toastUtils"; // Importe seu utilitário de toast
 
 export default function NovaSolicitacaoPage() {
   const router = useRouter();
@@ -16,13 +18,8 @@ export default function NovaSolicitacaoPage() {
     useState("");
   const [concordaTermos, setConcordaTermos] = useState(false);
 
-  const getLinkClasses = (linkPath) =>
-    `flex items-center p-3 rounded-md text-sm font-semibold transition-colors
-    ${
-      router.pathname === linkPath
-        ? "bg-zinc-800 text-white"
-        : "text-zinc-800 hover:bg-zinc-300"
-    }`;
+  // Removido getLinkClasses pois não está sendo usado no componente atual.
+  // Se for usado na Sidebar, deve ser definido lá ou passado como prop.
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -34,7 +31,10 @@ export default function NovaSolicitacaoPage() {
       !preferenciaGeneroProfissional ||
       !concordaTermos
     ) {
-      alert("Por favor, preencha todos os campos obrigatórios.");
+      // Substituído alert por notify.error
+      notify.error(
+        "Por favor, preencha todos os campos obrigatórios e aceite os termos."
+      );
       return;
     }
     console.log({
@@ -45,7 +45,10 @@ export default function NovaSolicitacaoPage() {
       preferenciaGeneroProfissional,
       concordaTermos,
     });
-    alert("Solicitação enviada com sucesso! (Simulação)");
+    // Substituído alert por notify.success
+    notify.success("Solicitação enviada com sucesso!");
+
+    // Limpar o formulário após o envio
     setTituloSolicitacao("");
     setTipoSolicitacao("");
     setMotivoSolicitacao("");
@@ -56,7 +59,9 @@ export default function NovaSolicitacaoPage() {
 
   return (
     <div className="min-h-screen bg-zinc-900 flex">
+      {/* Certifique-se de que Sidebar esteja configurada para receber props corretas se necessário */}
       <Sidebar />
+
       {/* Main Content - Form for New Request */}
       <main className="flex-1 p-8">
         <div className="bg-white rounded-lg shadow-md p-8">
@@ -97,8 +102,6 @@ export default function NovaSolicitacaoPage() {
                 <option value="">Selecione o tipo</option>
                 <option value="psicologico">Apoio Psicológico</option>
                 <option value="juridico">Apoio Jurídico</option>
-                <option value="social">Apoio Social</option>
-                <option value="outros">Outros</option>
               </select>
             </div>
             <div>

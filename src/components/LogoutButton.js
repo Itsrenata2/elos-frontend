@@ -4,6 +4,7 @@
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { FiLogOut } from "react-icons/fi"; // Assumindo que você usa react-icons para o ícone de logout
+import { notify } from "../utils/toastUtils"; // Importe seu utilitário de toast
 
 /**
  * Componente de botão de logout reutilizável.
@@ -29,8 +30,8 @@ export default function LogoutButton({
       Cookies.remove("authToken");
     }
 
-    // Mantendo o alerta e o redirecionamento como você já tinha
-    alert("Sessão encerrada! Redirecionando para o login...");
+    // Substituindo o alert por notify.info
+    notify.info("Sessão encerrada! Redirecionando para o login...");
     router.push("/login");
   };
 

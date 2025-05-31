@@ -2,133 +2,64 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import Link from "next/link";
-import Sidebar from "../../components/Sidebar"; // Importe a Sidebar atualizada
-import HistoryCard from "../../components/HistoryCard"; // Importa o novo componente
 import { useState, useMemo, useEffect, useCallback } from "react";
-import {
-  FiList,
-  FiLogOut,
-  FiCalendar,
-  FiMapPin,
-  FiUsers,
-  FiEdit,
-  FiShare2,
-  FiLoader,
-} from "react-icons/fi";
+import { FiEdit, FiShare2, FiLoader } from "react-icons/fi";
 
-// Componente de Modal para Envio de Email (mantido como está)
-const EmailModal = ({ isOpen, onClose, item, onSendEmail }) => {
-  const [recipientEmail, setRecipientEmail] = useState("");
-  const [emailSubject, setEmailSubject] = useState("");
-  const [emailBody, setEmailBody] = useState("");
+// Importações dos componentes de UI
+import Sidebar from "../../components/Sidebar";
+import HistoryCard from "../../components/HistoryCard";
+import EmailModal from "../../components/EmailModal"; // Importe o EmailModal
+import StatusEditModal from "../../components/StatusEditModal"; // Importe o StatusEditModal
 
-  useEffect(() => {
-    if (item) {
-      setEmailSubject(`Encaminhamento de ${item.type}: ${item.title}`);
-      setEmailBody(
-        `Detalhes da ${item.type}:\n\n` +
-          `Título: ${item.title}\n` +
-          `Descrição: ${item.description}\n` +
-          `Data: ${item.date}\n` +
-          (item.location ? `Local: ${item.location}\n` : "") +
-          `Status Atual: ${item.status}\n\n` +
-          `Por favor, tome as ações necessárias.`
-      );
-    }
-  }, [item]);
+// Importações de utilitários
+import { notify } from "../../utils/toastUtils"; // Certifique-se do caminho correto (ex: toast-utils)
 
-  if (!isOpen) return null;
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSendEmail(item.id, recipientEmail, emailSubject, emailBody);
-    onClose();
-  };
+const HistoryCardActions = ({
+  item,
+  handleMoveToAnalysis,
+  handleEditStatus,
+  handleForward,
+}) => {
+  if (item.status === "completo") {
+    return (
+      <span className="text-center border-2 border-green-500 text-green-500 py-2 px-4 rounded-md font-semibold mt-4">
+        Resolvido
+      </span>
+    );
+  }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold text-zinc-800 mb-4">
-          Encaminhar por Email
-        </h2>
-        {item && (
-          <div className="mb-4 text-zinc-700">
-            <p className="font-semibold">Item: {item.title}</p>
-            <p className="text-sm">Tipo: {item.type}</p>
-            <p className="text-sm">Status: {item.status}</p>
-          </div>
-        )}
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label
-              htmlFor="recipient-email"
-              className="block text-zinc-700 text-sm font-bold mb-2"
-            >
-              Email do Destinatário:
-            </label>
-            <input
-              type="email"
-              id="recipient-email"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={recipientEmail}
-              onChange={(e) => setRecipientEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="email-subject"
-              className="block text-zinc-700 text-sm font-bold mb-2"
-            >
-              Assunto:
-            </label>
-            <input
-              type="text"
-              id="email-subject"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={emailSubject}
-              onChange={(e) => setEmailSubject(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label
-              htmlFor="email-body"
-              className="block text-zinc-700 text-sm font-bold mb-2"
-            >
-              Corpo do Email:
-            </label>
-            <textarea
-              id="email-body"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 leading-tight focus:outline-none focus:shadow-outline h-32"
-              value={emailBody}
-              onChange={(e) => setEmailBody(e.target.value)}
-              required
-            ></textarea>
-          </div>
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-              Enviar Email
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <>
+      {item.status === "recebido" && (
+        <button
+          className="flex items-center justify-center bg-gray-700 text-white py-2 px-4 rounded-md font-semibold hover:bg-gray-800 transition"
+          onClick={() => handleMoveToAnalysis(item.id)}
+        >
+          <FiLoader className="mr-2" />
+          Mover para em análise
+        </button>
+      )}
+
+      <button
+        className="flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-blue-700 transition"
+        onClick={() => handleEditStatus(item.id)}
+      >
+        <FiEdit className="mr-2" />
+        Editar status
+      </button>
+
+      <button
+        className="flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-purple-700 transition"
+        onClick={() => handleForward(item.id)}
+      >
+        <FiShare2 className="mr-2" />
+        Encaminhar
+      </button>
+    </>
   );
 };
+// --- Fim do componente HistoryCardActions ---
 
-// Componente Principal
 export default function AdminDashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -136,7 +67,7 @@ export default function AdminDashboardPage() {
 
   // Estados locais para os filtros
   const [filterState, setFilterState] = useState({
-    activeLink: "Exibir tudo", // Pode ser 'Denúncias', 'Solicitações', 'Exibir tudo', 'Gerenciar Usuários'
+    activeLink: "Exibir tudo",
     date: "",
     status: "",
   });
@@ -144,6 +75,11 @@ export default function AdminDashboardPage() {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [selectedItemForEmail, setSelectedItemForEmail] = useState(null);
 
+  const [isStatusEditModalOpen, setIsStatusEditModalOpen] = useState(false);
+  const [selectedItemForStatusEdit, setSelectedItemForStatusEdit] =
+    useState(null);
+
+  // historyItems mantidos aqui para teste
   const [historyItems, setHistoryItems] = useState([
     {
       id: 1,
@@ -324,20 +260,26 @@ export default function AdminDashboardPage() {
   const handleMoveToAnalysis = useCallback(
     (id) => {
       updateItemStatus(id, "em análise");
-      alert(`Item ${id} movido para 'em análise'!`);
+      notify.success(`Item ${id} movido para 'em análise'!`);
     },
     [updateItemStatus]
   );
 
   const handleEditStatus = useCallback(
     (id) => {
-      const newStatus = prompt(
-        `Editar status do item ${id}. Digite o novo status (recebido, em análise, encaminhado, completo):`
-      );
-      if (newStatus) {
-        updateItemStatus(id, newStatus.toLowerCase());
-        alert(`Status do item ${id} alterado para: ${newStatus}!`);
-      }
+      const itemToEdit = historyItems.find((item) => item.id === id);
+      setSelectedItemForStatusEdit(itemToEdit);
+      setIsStatusEditModalOpen(true);
+    },
+    [historyItems]
+  );
+
+  const handleSaveStatusFromModal = useCallback(
+    (id, newStatus) => {
+      updateItemStatus(id, newStatus);
+      notify.info(`Status do item ${id} alterado para: ${newStatus}!`);
+      setIsStatusEditModalOpen(false);
+      setSelectedItemForStatusEdit(null);
     },
     [updateItemStatus]
   );
@@ -356,7 +298,9 @@ export default function AdminDashboardPage() {
       console.log(
         `Simulando envio de email para: ${recipientEmail}\nAssunto: ${subject}\nCorpo: ${body}`
       );
-      alert(`Email para ${recipientEmail} enviado com sucesso! (Simulação)`);
+      notify.success(
+        `Email para ${recipientEmail} enviado com sucesso! (Simulação)`
+      );
       updateItemStatus(id, "encaminhado");
       setIsEmailModalOpen(false);
       setSelectedItemForEmail(null);
@@ -368,7 +312,7 @@ export default function AdminDashboardPage() {
   // Lógica de filtragem dos itens (agora usando filterState)
   const filteredItems = useMemo(() => {
     let items = historyItems;
-    const urlTypeParam = searchParams.get("type"); // Ainda usamos o searchParams para o tipo
+    const urlTypeParam = searchParams.get("type");
 
     // Se a página for /admin/users, não exibe itens de histórico
     if (pathname === "/admin/users") {
@@ -496,42 +440,13 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredItems.map((item) => (
               <HistoryCard key={item.id} item={item}>
-                {item.status !== "completo" ? (
-                  <>
-                    {/* Botão "Mover para em análise" */}
-                    {item.status === "recebido" && (
-                      <button
-                        className="flex items-center justify-center bg-gray-700 text-white py-2 px-4 rounded-md font-semibold hover:bg-gray-800 transition"
-                        onClick={() => handleMoveToAnalysis(item.id)}
-                      >
-                        <FiLoader className="mr-2" />
-                        Mover para em análise
-                      </button>
-                    )}
-
-                    {/* Botão "Editar status" */}
-                    <button
-                      className="flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-blue-700 transition"
-                      onClick={() => handleEditStatus(item.id)}
-                    >
-                      <FiEdit className="mr-2" />
-                      Editar status
-                    </button>
-
-                    {/* Botão "Encaminhar" */}
-                    <button
-                      className="flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-purple-700 transition"
-                      onClick={() => handleForward(item.id)}
-                    >
-                      <FiShare2 className="mr-2" />
-                      Encaminhar
-                    </button>
-                  </>
-                ) : (
-                  <span className="text-center border-2 border-green-500 text-green-500 py-2 px-4 rounded-md font-semibold mt-4">
-                    Resolvido
-                  </span>
-                )}
+                {/* Usando o componente HistoryCardActions aqui */}
+                <HistoryCardActions
+                  item={item}
+                  handleMoveToAnalysis={handleMoveToAnalysis}
+                  handleEditStatus={handleEditStatus}
+                  handleForward={handleForward}
+                />
               </HistoryCard>
             ))}
           </div>
@@ -542,12 +457,19 @@ export default function AdminDashboardPage() {
         )}
       </main>
 
-      {/* Modal de Email */}
+      {/* Modais importados e renderizados */}
       <EmailModal
         isOpen={isEmailModalOpen}
         onClose={() => setIsEmailModalOpen(false)}
         item={selectedItemForEmail}
         onSendEmail={handleSendEmail}
+      />
+
+      <StatusEditModal
+        isOpen={isStatusEditModalOpen}
+        onClose={() => setIsStatusEditModalOpen(false)}
+        item={selectedItemForStatusEdit}
+        onSaveStatus={handleSaveStatusFromModal}
       />
     </div>
   );

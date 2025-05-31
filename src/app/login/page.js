@@ -1,33 +1,36 @@
+// pages/login/page.js
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation"; // Importe useSearchParams
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Cookies from "js-cookie";
-import { useState, useEffect } from "react"; // Importe useEffect
+import { useState, useEffect } from "react";
+import { notify } from "../../utils/toastUtils"; // Importe seu utilitário de toast
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams(); // Use o hook useSearchParams
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  // Removendo o estado 'error' local, pois os erros serão exibidos via toast
+  // const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [redirectTo, setRedirectTo] = useState("/records"); // Estado para armazenar o destino final
+  const [redirectTo, setRedirectTo] = useState("/records");
 
-  // Use useEffect para ler o parâmetro 'redirect' da URL uma vez
   useEffect(() => {
     const redirectParam = searchParams.get("redirect");
     if (redirectParam) {
-      setRedirectTo(decodeURIComponent(redirectParam)); // Decodifica o URL para o caminho original
+      setRedirectTo(decodeURIComponent(redirectParam));
     } else {
-      setRedirectTo("/records"); // Padrão se não houver parâmetro 'redirect' (ex: veio do link "login" no menu)
+      setRedirectTo("/records");
     }
-  }, [searchParams]); // Dependência em searchParams para re-executar se os parâmetros da URL mudarem
+  }, [searchParams]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
+    // Não precisamos mais limpar o estado de erro, pois o toast é efêmero
+    // setError("");
     setIsLoading(true);
 
     try {
@@ -37,7 +40,7 @@ export default function LoginPage() {
         console.error(
           "Variável de ambiente NEXT_PUBLIC_NESTJS_API_URL_LOGIN não definida."
         );
-        setError(
+        notify.error(
           "Erro de configuração: URL do backend de login não encontrada."
         );
         setIsLoading(false);
@@ -62,7 +65,7 @@ export default function LoginPage() {
         data = JSON.parse(responseText);
       } catch (parseError) {
         console.error("Erro ao fazer JSON.parse da resposta:", parseError);
-        setError(
+        notify.error(
           "Erro inesperado na resposta do servidor. Consulte o console para mais detalhes."
         );
         setIsLoading(false);
@@ -72,9 +75,10 @@ export default function LoginPage() {
       if (response.ok) {
         if (data && data.token) {
           Cookies.set("authToken", data.token, { expires: 7 });
+          notify.success("Login bem-sucedido! Redirecionando...");
           router.push(redirectTo);
         } else {
-          setError(
+          notify.error(
             "Login bem-sucedido, mas nenhum token de autenticação foi recebido."
           );
         }
@@ -84,11 +88,11 @@ export default function LoginPage() {
             ? data.message.join(", ")
             : data.message
           : "Credenciais inválidas. Tente novamente.";
-        setError(errorMessage);
+        notify.error(errorMessage);
       }
     } catch (err) {
       console.error("Erro na requisição de login:", err);
-      setError(
+      notify.error(
         "Não foi possível conectar ao servidor. Verifique sua conexão ou tente mais tarde."
       );
     } finally {
@@ -132,7 +136,8 @@ export default function LoginPage() {
               disabled={isLoading}
             />
           </div>
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {/* Removendo a exibição do erro aqui, pois será feita via toast */}
+          {/* {error && <p className="text-red-500 text-sm text-center">{error}</p>} */}
           <button
             type="submit"
             className="w-full bg-zinc-900 text-white py-3 rounded-md font-semibold hover:bg-zinc-800 transition"

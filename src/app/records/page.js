@@ -7,6 +7,7 @@ import FilterControls from "../../components/FilterControls";
 import { useUrlFilters } from "../../hooks/useUrlFilters"; // Importe seu hook
 import { useState, useMemo, useCallback } from "react";
 import { FiCheckCircle } from "react-icons/fi";
+import { notify } from "../../utils/toastUtils";
 
 export default function HistoryPage() {
   const [historyItems, setHistoryItems] = useState([
@@ -104,7 +105,7 @@ export default function HistoryPage() {
   const handleMarkAsComplete = useCallback(
     (id) => {
       updateItemStatus(id, "completo");
-      alert(`Item ${id} marcado como completo!`);
+      notify.success(`Item ${id} marcado como completo!`);
     },
     [updateItemStatus]
   );
