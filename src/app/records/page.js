@@ -1,7 +1,6 @@
 // app/records/page.js
 "use client";
 
-import AuthWrapper from "../../components/AuthWrapper";
 import Sidebar from "../../components/Sidebar";
 import HistoryCard from "../../components/HistoryCard";
 import FilterControls from "../../components/FilterControls";
@@ -145,58 +144,54 @@ export default function HistoryPage() {
   }, [historyItems]);
 
   return (
-    <AuthWrapper>
-      <div className="min-h-screen bg-zinc-900 flex">
-        {/*
+    <div className="min-h-screen bg-zinc-900 flex">
+      {/*
           Passa o activeLink para a Sidebar e a função handleFilterChange.
           A Sidebar usará esses para gerenciar seus links internos.
           Não precisa mais de onLinkClick. Os links internos da Sidebar já chamam handleFilterChange.
         */}
-        <Sidebar isAdmin={false} /> {/* Não é admin, então isAdmin é false */}
-        <main className="flex-1 p-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-white mb-4 md:mb-0">
-              Histórico
-            </h1>
+      <Sidebar isAdmin={false} /> {/* Não é admin, então isAdmin é false */}
+      <main className="flex-1 p-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-white mb-4 md:mb-0">
+            Histórico
+          </h1>
 
-            <FilterControls
-              filterState={filterState}
-              allPossibleStatuses={allPossibleStatuses}
-              onDateChange={(e) => handleFilterChange("date", e.target.value)}
-              onStatusChange={(e) =>
-                handleFilterChange("status", e.target.value)
-              }
-              onClearFilter={clearFilter}
-            />
-          </div>
+          <FilterControls
+            filterState={filterState}
+            allPossibleStatuses={allPossibleStatuses}
+            onDateChange={(e) => handleFilterChange("date", e.target.value)}
+            onStatusChange={(e) => handleFilterChange("status", e.target.value)}
+            onClearFilter={clearFilter}
+          />
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredItems.length > 0 ? (
-              filteredItems.map((item) => (
-                <HistoryCard key={item.id} item={item}>
-                  {item.status !== "completo" ? (
-                    <button
-                      className="flex items-center justify-center bg-zinc-900 text-white py-2 px-4 rounded-md font-semibold hover:bg-zinc-800 transition mt-4"
-                      onClick={() => handleMarkAsComplete(item.id)}
-                    >
-                      <FiCheckCircle className="mr-2" />
-                      Marcar como completo
-                    </button>
-                  ) : (
-                    <span className="text-center border-2 border-green-500 text-green-500 py-2 px-4 rounded-md font-semibold mt-4">
-                      Resolvido
-                    </span>
-                  )}
-                </HistoryCard>
-              ))
-            ) : (
-              <p className="text-white text-lg col-span-full text-center">
-                Nenhum item encontrado para o filtro selecionado.
-              </p>
-            )}
-          </div>
-        </main>
-      </div>
-    </AuthWrapper>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredItems.length > 0 ? (
+            filteredItems.map((item) => (
+              <HistoryCard key={item.id} item={item}>
+                {item.status !== "completo" ? (
+                  <button
+                    className="flex items-center justify-center bg-zinc-900 text-white py-2 px-4 rounded-md font-semibold hover:bg-zinc-800 transition mt-4"
+                    onClick={() => handleMarkAsComplete(item.id)}
+                  >
+                    <FiCheckCircle className="mr-2" />
+                    Marcar como completo
+                  </button>
+                ) : (
+                  <span className="text-center border-2 border-green-500 text-green-500 py-2 px-4 rounded-md font-semibold mt-4">
+                    Resolvido
+                  </span>
+                )}
+              </HistoryCard>
+            ))
+          ) : (
+            <p className="text-white text-lg col-span-full text-center">
+              Nenhum item encontrado para o filtro selecionado.
+            </p>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }

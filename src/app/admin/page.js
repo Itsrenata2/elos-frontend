@@ -3,7 +3,6 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
-import AuthWrapper from "../../components/AuthWrapper";
 import Sidebar from "../../components/Sidebar"; // Importe a Sidebar atualizada
 import HistoryCard from "../../components/HistoryCard"; // Importa o novo componente
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -405,153 +404,151 @@ export default function AdminDashboardPage() {
   }, [historyItems]);
 
   return (
-    <AuthWrapper>
-      <div className="min-h-screen bg-zinc-900 flex">
-        {/* Passe a prop isAdmin={true} para renderizar a versão de admin da Sidebar */}
-        <Sidebar isAdmin={true} />
+    <div className="min-h-screen bg-zinc-900 flex">
+      {/* Passe a prop isAdmin={true} para renderizar a versão de admin da Sidebar */}
+      <Sidebar isAdmin={true} />
 
-        {/* Conteúdo Principal */}
-        <main className="flex-1 p-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-white mb-4 md:mb-0">
-              Painel Administrativo
-            </h1>
+      {/* Conteúdo Principal */}
+      <main className="flex-1 p-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-white mb-4 md:mb-0">
+            Painel Administrativo
+          </h1>
 
-            {/* Filtros visíveis apenas se NÃO for a página de Gerenciar Usuários */}
-            {pathname !== "/admin/users" && (
-              <div className="flex flex-col sm:flex-row gap-4">
-                {/* Filtro de Data */}
-                <div className="flex items-center bg-zinc-800 p-3 rounded-md shadow-md">
-                  <label
-                    htmlFor="date-filter"
-                    className="text-white text-md font-semibold mr-3 whitespace-nowrap"
+          {/* Filtros visíveis apenas se NÃO for a página de Gerenciar Usuários */}
+          {pathname !== "/admin/users" && (
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Filtro de Data */}
+              <div className="flex items-center bg-zinc-800 p-3 rounded-md shadow-md">
+                <label
+                  htmlFor="date-filter"
+                  className="text-white text-md font-semibold mr-3 whitespace-nowrap"
+                >
+                  Data:
+                </label>
+                <input
+                  type="date"
+                  id="date-filter"
+                  value={filterState.date}
+                  onChange={handleDateFilterChange}
+                  className="px-3 py-2 rounded-md bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {filterState.date && (
+                  <button
+                    onClick={() => clearFilter("date")}
+                    className="ml-4 px-3 py-2 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition whitespace-nowrap"
                   >
-                    Data:
-                  </label>
-                  <input
-                    type="date"
-                    id="date-filter"
-                    value={filterState.date}
-                    onChange={handleDateFilterChange}
-                    className="px-3 py-2 rounded-md bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {filterState.date && (
-                    <button
-                      onClick={() => clearFilter("date")}
-                      className="ml-4 px-3 py-2 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition whitespace-nowrap"
-                    >
-                      Limpar
-                    </button>
-                  )}
-                </div>
-
-                {/* Filtro de Status */}
-                <div className="flex items-center bg-zinc-800 p-3 rounded-md shadow-md">
-                  <label
-                    htmlFor="status-filter"
-                    className="block text-white text-md font-semibold mr-3 whitespace-nowrap"
-                  >
-                    Status:
-                  </label>
-                  <select
-                    id="status-filter"
-                    value={filterState.status}
-                    onChange={handleStatusFilterChange}
-                    className="px-3 py-2 rounded-md bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                  >
-                    <option value="">Todos</option>
-                    {allPossibleStatuses.map(
-                      (status) =>
-                        status && (
-                          <option key={status} value={status}>
-                            {status.charAt(0).toUpperCase() + status.slice(1)}
-                          </option>
-                        )
-                    )}
-                  </select>
-                  {filterState.status && (
-                    <button
-                      onClick={() => clearFilter("status")}
-                      className="ml-4 px-3 py-2 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition whitespace-nowrap"
-                    >
-                      Limpar
-                    </button>
-                  )}
-                </div>
+                    Limpar
+                  </button>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Conteúdo dinâmico baseado no pathname (Gerenciar Usuários vs. Histórico) */}
-          {pathname === "/admin/users" ? (
-            <div className="text-white text-center p-8 border border-zinc-700 rounded-lg">
-              <h2 className="text-2xl font-bold mb-4">
-                Gerenciamento de Usuários
-              </h2>
-              <p>
-                Esta é uma área para gerenciar usuários. Em uma aplicação real,
-                você teria uma tabela com a lista de usuários, opções para
-                editar, excluir, etc.
-              </p>
-            </div>
-          ) : filteredItems.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredItems.map((item) => (
-                <HistoryCard key={item.id} item={item}>
-                  {item.status !== "completo" ? (
-                    <>
-                      {/* Botão "Mover para em análise" */}
-                      {item.status === "recebido" && (
-                        <button
-                          className="flex items-center justify-center bg-gray-700 text-white py-2 px-4 rounded-md font-semibold hover:bg-gray-800 transition"
-                          onClick={() => handleMoveToAnalysis(item.id)}
-                        >
-                          <FiLoader className="mr-2" />
-                          Mover para em análise
-                        </button>
-                      )}
-
-                      {/* Botão "Editar status" */}
-                      <button
-                        className="flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-blue-700 transition"
-                        onClick={() => handleEditStatus(item.id)}
-                      >
-                        <FiEdit className="mr-2" />
-                        Editar status
-                      </button>
-
-                      {/* Botão "Encaminhar" */}
-                      <button
-                        className="flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-purple-700 transition"
-                        onClick={() => handleForward(item.id)}
-                      >
-                        <FiShare2 className="mr-2" />
-                        Encaminhar
-                      </button>
-                    </>
-                  ) : (
-                    <span className="text-center border-2 border-green-500 text-green-500 py-2 px-4 rounded-md font-semibold mt-4">
-                      Resolvido
-                    </span>
+              {/* Filtro de Status */}
+              <div className="flex items-center bg-zinc-800 p-3 rounded-md shadow-md">
+                <label
+                  htmlFor="status-filter"
+                  className="block text-white text-md font-semibold mr-3 whitespace-nowrap"
+                >
+                  Status:
+                </label>
+                <select
+                  id="status-filter"
+                  value={filterState.status}
+                  onChange={handleStatusFilterChange}
+                  className="px-3 py-2 rounded-md bg-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                >
+                  <option value="">Todos</option>
+                  {allPossibleStatuses.map(
+                    (status) =>
+                      status && (
+                        <option key={status} value={status}>
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </option>
+                      )
                   )}
-                </HistoryCard>
-              ))}
+                </select>
+                {filterState.status && (
+                  <button
+                    onClick={() => clearFilter("status")}
+                    className="ml-4 px-3 py-2 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition whitespace-nowrap"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
             </div>
-          ) : (
-            <p className="text-white text-lg col-span-full text-center">
-              Nenhum item encontrado para o filtro selecionado.
-            </p>
           )}
-        </main>
+        </div>
 
-        {/* Modal de Email */}
-        <EmailModal
-          isOpen={isEmailModalOpen}
-          onClose={() => setIsEmailModalOpen(false)}
-          item={selectedItemForEmail}
-          onSendEmail={handleSendEmail}
-        />
-      </div>
-    </AuthWrapper>
+        {/* Conteúdo dinâmico baseado no pathname (Gerenciar Usuários vs. Histórico) */}
+        {pathname === "/admin/users" ? (
+          <div className="text-white text-center p-8 border border-zinc-700 rounded-lg">
+            <h2 className="text-2xl font-bold mb-4">
+              Gerenciamento de Usuários
+            </h2>
+            <p>
+              Esta é uma área para gerenciar usuários. Em uma aplicação real,
+              você teria uma tabela com a lista de usuários, opções para editar,
+              excluir, etc.
+            </p>
+          </div>
+        ) : filteredItems.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredItems.map((item) => (
+              <HistoryCard key={item.id} item={item}>
+                {item.status !== "completo" ? (
+                  <>
+                    {/* Botão "Mover para em análise" */}
+                    {item.status === "recebido" && (
+                      <button
+                        className="flex items-center justify-center bg-gray-700 text-white py-2 px-4 rounded-md font-semibold hover:bg-gray-800 transition"
+                        onClick={() => handleMoveToAnalysis(item.id)}
+                      >
+                        <FiLoader className="mr-2" />
+                        Mover para em análise
+                      </button>
+                    )}
+
+                    {/* Botão "Editar status" */}
+                    <button
+                      className="flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-blue-700 transition"
+                      onClick={() => handleEditStatus(item.id)}
+                    >
+                      <FiEdit className="mr-2" />
+                      Editar status
+                    </button>
+
+                    {/* Botão "Encaminhar" */}
+                    <button
+                      className="flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-purple-700 transition"
+                      onClick={() => handleForward(item.id)}
+                    >
+                      <FiShare2 className="mr-2" />
+                      Encaminhar
+                    </button>
+                  </>
+                ) : (
+                  <span className="text-center border-2 border-green-500 text-green-500 py-2 px-4 rounded-md font-semibold mt-4">
+                    Resolvido
+                  </span>
+                )}
+              </HistoryCard>
+            ))}
+          </div>
+        ) : (
+          <p className="text-white text-lg col-span-full text-center">
+            Nenhum item encontrado para o filtro selecionado.
+          </p>
+        )}
+      </main>
+
+      {/* Modal de Email */}
+      <EmailModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        item={selectedItemForEmail}
+        onSendEmail={handleSendEmail}
+      />
+    </div>
   );
 }

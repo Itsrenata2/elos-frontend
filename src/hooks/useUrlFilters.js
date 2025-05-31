@@ -20,28 +20,35 @@ export function useUrlFilters(
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const [filterState, setFilterState] = useState({
-    activeLink: initialActiveLink,
-    typeParam: searchParams.get("type") || "", // Adiciona typeParam diretamente ao estado
-    date: "",
-    status: "",
+  // Inicializa o estado com base nos searchParams ATUAIS da URL.
+  // Isso garante que o estado inicial já reflita a URL.
+  const [filterState, setFilterState] = useState(() => {
+    const urlType = searchParams.get("type") || "";
+    const urlDate = searchParams.get("date") || "";
+    const urlStatus = searchParams.get("status") || "";
+
+    let initialLink = initialActiveLink;
+    // Tenta encontrar o activeLink com base na URL inicial
+    for (const linkName in linkTypeMapping) {
+      if (linkTypeMapping[linkName] === urlType) {
+        initialLink = linkName;
+        break;
+      }
+    }
+    if (isAdmin && pathname === "/admin/users") {
+      initialLink = "Gerenciar Usuários"; // Se for a página de usuários no admin
+    }
+
+    return {
+      activeLink: initialLink,
+      typeParam: urlType,
+      date: urlDate,
+      status: urlStatus,
+    };
   });
 
-  // Função para mapear o nome do link da sidebar para o parâmetro 'type' da URL
-  // Agora recebe o linkTypeMapping para ser mais genérico
-  const getTypeParamFromLinkName = useCallback(
-    (linkName) => {
-      // Usa o mapeamento fornecido, se o linkName existir, retorna o tipo
-      if (linkTypeMapping[linkName] !== undefined) {
-        return linkTypeMapping[linkName];
-      }
-      return ""; // Padrão para quando não há um tipo específico (Ex: "Exibir tudo")
-    },
-    [linkTypeMapping]
-  );
-
   // Função para atualizar os parâmetros da URL.
-  // Será chamada pelo handleFilterChange.
+  // Esta função SÓ DEVE SER CHAMADA EM RESPOSTA A EVENTOS (cliques, submits, etc.)
   const updateUrlParams = useCallback(
     (newParams) => {
       const currentParams = new URLSearchParams(searchParams.toString());
@@ -56,23 +63,35 @@ export function useUrlFilters(
 
       const newUrl = `${pathname}?${currentParams.toString()}`;
       if (router.asPath !== newUrl) {
+        // router.push deve ser chamado APENAS em resposta a eventos
         router.push(newUrl, { shallow: true });
       }
     },
     [searchParams, router, pathname]
   );
 
-  // Função genérica para mudar qualquer filtro e atualizar a URL
+  // Mapeamento de link para tipo (passado como prop)
+  const getTypeParamFromLinkName = useCallback(
+    (linkName) => {
+      if (linkTypeMapping[linkName] !== undefined) {
+        return linkTypeMapping[linkName];
+      }
+      return "";
+    },
+    [linkTypeMapping]
+  );
+
+  // Função genérica para mudar qualquer filtro e ATUALIZAR A URL
   const handleFilterChange = useCallback(
     (filterName, value) => {
       setFilterState((prevState) => {
         let newState = { ...prevState, [filterName]: value };
 
-        // Lógica específica para quando o 'activeLink' (link da sidebar) muda
         if (filterName === "activeLink") {
-          // Se for "Gerenciar Usuários" (apenas para admin), navega diretamente e reseta filtros
           if (isAdmin && value === "Gerenciar Usuários") {
             router.push("/admin/users", { shallow: true });
+            // Se navegamos, não precisamos atualizar o estado local aqui,
+            // o useEffect na nova página ou a própria Next.js lidará com isso.
             return {
               activeLink: "Gerenciar Usuários",
               typeParam: "",
@@ -80,21 +99,18 @@ export function useUrlFilters(
               status: "",
             };
           }
-          // Mapeia o nome do link para o 'typeParam' da URL
           newState.typeParam = getTypeParamFromLinkName(value);
-          // Quando um link da sidebar é clicado, geralmente queremos limpar outros filtros
           newState.date = "";
           newState.status = "";
         }
 
-        // Determina os parâmetros da URL a serem atualizados
         const paramsToUpdate = {
           type: newState.typeParam,
           date: newState.date,
           status: newState.status,
         };
 
-        // Chama updateUrlParams para refletir as mudanças na URL
+        // Chama updateUrlParams APENAS AQUI (em resposta a uma mudança de filtro)
         updateUrlParams(paramsToUpdate);
 
         return newState;
@@ -103,8 +119,9 @@ export function useUrlFilters(
     [isAdmin, getTypeParamFromLinkName, updateUrlParams, router]
   );
 
-  // Sincroniza estados locais com a URL no carregamento ou mudança da URL
-  // ESTE useEffect DEVE APENAS LER E ATUALIZAR O ESTADO LOCAL, NUNCA NAVEGAR.
+  // UseEffect para sincronizar o estado LOCAL do hook com as mudanças na URL.
+  // Este useEffect NÃO DEVE CHAMAR router.push.
+  // Ele APENAS LÊ a URL e atualiza o estado interno do hook.
   useEffect(() => {
     const urlType = searchParams.get("type") || "";
     const urlDate = searchParams.get("date") || "";
@@ -112,8 +129,6 @@ export function useUrlFilters(
 
     let newActiveLink = initialActiveLink;
 
-    // Lógica para determinar o activeLink baseado na URL atual
-    // Itera sobre o linkTypeMapping para encontrar o nome do link correspondente ao urlType
     let foundActiveLinkByUrl = false;
     for (const linkName in linkTypeMapping) {
       if (linkTypeMapping[linkName] === urlType) {
@@ -123,34 +138,32 @@ export function useUrlFilters(
       }
     }
 
-    // Caso o urlType seja vazio e a URL seja o caminho base (records ou admin),
-    // o "Exibir tudo" deve ser o ativo.
     if (
       !foundActiveLinkByUrl &&
       urlType === "" &&
       (pathname === "/records" || pathname === "/admin")
     ) {
-      // Encontra o nome do link que mapeia para vazio (Exibir tudo)
       for (const linkName in linkTypeMapping) {
         if (linkTypeMapping[linkName] === "") {
+          // Mapeia "Exibir tudo"
           newActiveLink = linkName;
           break;
         }
       }
     }
 
-    // Lógica específica para Gerenciar Usuários no Admin
     if (isAdmin && pathname === "/admin/users") {
       newActiveLink = "Gerenciar Usuários";
     }
 
+    // Apenas atualiza o estado local do hook com base na URL
     setFilterState({
       activeLink: newActiveLink,
-      typeParam: urlType, // Atualiza typeParam do estado com o da URL
+      typeParam: urlType,
       date: urlDate,
       status: urlStatus,
     });
-  }, [searchParams, pathname, initialActiveLink, linkTypeMapping, isAdmin]);
+  }, [searchParams, pathname, initialActiveLink, linkTypeMapping, isAdmin]); // Dependências do useEffect
 
   return {
     filterState,
@@ -167,6 +180,5 @@ export function useUrlFilters(
       (filterName) => handleFilterChange(filterName, ""),
       [handleFilterChange]
     ),
-    // Não precisamos expor getTypeParamFromLinkName diretamente aqui
   };
 }

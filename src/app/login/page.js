@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation"; // Importe useSearchParams
 import Link from "next/link";
+import Cookies from "js-cookie";
 import { useState, useEffect } from "react"; // Importe useEffect
 
 export default function LoginPage() {
@@ -70,9 +71,8 @@ export default function LoginPage() {
 
       if (response.ok) {
         if (data && data.token) {
-          localStorage.setItem("authToken", data.token);
-          // *** AQUI É A MUDANÇA PRINCIPAL ***
-          router.push(redirectTo); // Redireciona para o caminho determinado no useEffect
+          Cookies.set("authToken", data.token, { expires: 7 });
+          router.push(redirectTo);
         } else {
           setError(
             "Login bem-sucedido, mas nenhum token de autenticação foi recebido."

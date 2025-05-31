@@ -1,6 +1,7 @@
 // components/LogoutButton.js
 "use client"; // Este componente precisa ser executado no lado do cliente
 
+import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { FiLogOut } from "react-icons/fi"; // Assumindo que você usa react-icons para o ícone de logout
 
@@ -21,9 +22,11 @@ export default function LogoutButton({
   const router = useRouter();
 
   const handleLogout = () => {
+    console.log(typeof window);
     // Garante que estamos no ambiente do navegador antes de tentar acessar localStorage
     if (typeof window !== "undefined") {
-      localStorage.removeItem("authToken"); // Remove o token do localStorage
+      //localStorage.removeItem("authToken"); // Remove o token do localStorage
+      Cookies.remove("authToken");
     }
 
     // Mantendo o alerta e o redirecionamento como você já tinha

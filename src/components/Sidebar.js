@@ -35,7 +35,7 @@ export default function Sidebar({ isAdmin = false }) {
       "Exibir tudo": null, // Usamos null para indicar nenhum type param
     },
     "/complaints": { "Nova denúncia": null },
-    "/new-solicitacao": { "Nova solicitação": null },
+    "/requests": { "Nova solicitação": null },
   };
 
   // Função para determinar as classes de estilo do link ativo
@@ -163,10 +163,7 @@ export default function Sidebar({ isAdmin = false }) {
               <div className="border-t border-zinc-300 my-4"></div>
 
               {/* Link para Nova Solicitação */}
-              <Link
-                href="/new-solicitacao"
-                className={getLinkClasses("/new-solicitacao")}
-              >
+              <Link href="/requests" className={getLinkClasses("/requests")}>
                 <FiPlus className="mr-3 text-lg" />
                 Nova solicitação
               </Link>
