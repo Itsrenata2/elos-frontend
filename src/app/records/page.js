@@ -1,131 +1,204 @@
 // app/records/page.js
 "use client";
 
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Sidebar from "../../components/Sidebar";
 import HistoryCard from "../../components/HistoryCard";
 import FilterControls from "../../components/FilterControls";
-import { useUrlFilters } from "../../hooks/useUrlFilters"; // Importe seu hook
-import { useState, useMemo, useCallback } from "react";
+import { useUrlFilters } from "../../hooks/useUrlFilters";
 import { FiCheckCircle } from "react-icons/fi";
 import { notify } from "../../utils/toastUtils";
+import Cookies from "js-cookie";
+
+const STATUS_MAP_BACKEND_TO_FRONTEND = {
+  RECEIVED: "recebido",
+  IN_REVIEW: "em análise",
+  FORWARDED: "encaminhado",
+  COMPLETED: "completo",
+};
+
+const STATUS_MAP_FRONTEND_TO_BACKEND = {
+  recebido: "RECEIVED",
+  "em análise": "IN_REVIEW",
+  encaminhado: "FORWARDED",
+  completo: "COMPLETED",
+};
+
+// Ajuste este mapeamento conforme o seu backend retorna os tipos.
+// Ex: se o backend tem 'DENUNCIA' e 'SOLICITACAO_JURIDICA', 'SOLICITACAO_PSICOLOGICA'
+const TYPE_MAP_BACKEND_TO_FRONTEND = {
+  JURIDICO: { type: "Solicitação", subType: "jurídica" },
+  PSICOLOGICO: { type: "Solicitação", subType: "psicológica" },
+  // Exemplo para denúncias (se seu backend as retornar):
+  // "COMPLAINT": { type: "Denúncia", subType: null }
+};
 
 export default function HistoryPage() {
-  const [historyItems, setHistoryItems] = useState([
-    // ... seus dados ...
-    {
-      id: 1,
-      type: "Denúncia",
-      title: "Título da Denúncia 1",
-      description: "descrição da denúncia",
-      status: "em análise",
-      date: "2025-05-20",
-      location: "Rua das Flores, 123 - Centro",
-    },
-    {
-      id: 2,
-      type: "Solicitação",
-      subType: "psicológica",
-      title: "Título da Solicitação Psicológica 1",
-      description: "descrição da solicitação psicológica.",
-      status: "recebido",
-      date: "2025-05-25",
-    },
-    {
-      id: 3,
-      type: "Solicitação",
-      subType: "jurídica",
-      title: "Título da Solicitação Jurídica 1",
-      description: "descrição da solicitação jurídica.",
-      status: "encaminhado",
-      date: "2025-05-18",
-    },
-    {
-      id: 4,
-      type: "Denúncia",
-      title: "Título da Denúncia 2",
-      description: "descrição da denúncia",
-      status: "completo",
-      date: "2025-05-20",
-      location: "Praça da Sé, s/n",
-    },
-    {
-      id: 5,
-      type: "Denúncia",
-      title: "Título da Denúncia 3",
-      description: "mais uma descrição de denúncia para teste.",
-      status: "em análise",
-      date: "2025-05-22",
-      location: "Rua do Comércio, 789",
-    },
-    {
-      id: 6,
-      type: "Solicitação",
-      subType: "psicológica",
-      title: "Título da Solicitação Psicológica 2",
-      description: "mais uma descrição de solicitação psicológica para teste.",
-      status: "recebido",
-      date: "2025-05-26",
-    },
-    {
-      id: 7,
-      type: "Solicitação",
-      subType: "jurídica",
-      title: "Título da Solicitação Jurídica 2",
-      description: "mais uma descrição de solicitação jurídica para teste.",
-      status: "em análise",
-      date: "2025-05-21",
-    },
-  ]);
+  const router = useRouter();
+  const [historyItems, setHistoryItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mapeamento específico para os links da página de histórico
   const linkTypeMapping = useMemo(
     () => ({
-      "Exibir tudo": "", // Vazio para "Exibir tudo"
+      "Exibir tudo": "",
       "Denúncias feitas": "denuncia",
       "Solicitações feitas": "solicitacao",
     }),
     []
   );
 
-  // Use o hook, passando o mapeamento e indicando que não é admin
   const { filterState, handleFilterChange, clearFilter } = useUrlFilters(
     "Exibir tudo",
     linkTypeMapping,
-    false // isAdmin = false para a página de histórico
+    false
   );
 
-  const updateItemStatus = useCallback((id, newStatus) => {
-    setHistoryItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, status: newStatus } : item
-      )
-    );
-  }, []);
+  const fetchHistoryItems = useCallback(async () => {
+    setLoading(true);
+    try {
+      const authToken = Cookies.get("authToken");
+      if (!authToken) {
+        notify.error("Você não está autenticado. Redirecionando para login.");
+        router.push("/login");
+        return;
+      }
+
+      // Usar a URL base e adicionar o caminho do endpoint de listagem
+      const backendApiUrl = `${process.env.NEXT_PUBLIC_NESTJS_API_URL}/support-requests`; // Exemplo
+
+      if (!backendApiUrl) {
+        console.error(
+          "Variável de ambiente NEXT_PUBLIC_NESTJS_API_URL não definida ou incorreta."
+        );
+        notify.error(
+          "Erro de configuração: URL do backend de histórico não encontrada."
+        );
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(backendApiUrl, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Falha ao carregar histórico.");
+      }
+
+      const data = await response.json();
+      console.log("Dados brutos recebidos do backend:", data);
+
+      const mappedItems = data.map((item) => {
+        const { type, subType } = TYPE_MAP_BACKEND_TO_FRONTEND[item.type] || {
+          type: "Desconhecido",
+          subType: null,
+        };
+        const statusFrontend =
+          STATUS_MAP_BACKEND_TO_FRONTEND[item.status] || item.status;
+
+        return {
+          id: item.id,
+          type: type,
+          subType: subType,
+          title: item.title,
+          description: item.description,
+          status: statusFrontend,
+          date: item.createdAt
+            ? new Date(item.createdAt).toISOString().split("T")[0]
+            : null,
+        };
+      });
+      setHistoryItems(mappedItems);
+    } catch (error) {
+      console.error("Erro ao carregar histórico:", error);
+      notify.error(`Erro ao carregar histórico: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    fetchHistoryItems();
+  }, [fetchHistoryItems]);
 
   const handleMarkAsComplete = useCallback(
-    (id) => {
-      updateItemStatus(id, "completo");
-      notify.success(`Item ${id} marcado como completo!`);
+    async (id) => {
+      const confirmed = confirm(
+        "Tem certeza que deseja marcar esta solicitação/denúncia como 'completa'?"
+      );
+      if (!confirmed) return;
+
+      const itemToUpdate = historyItems.find((item) => item.id === id);
+      if (!itemToUpdate) {
+        notify.error("Item não encontrado para atualização.");
+        return;
+      }
+
+      const newBackendStatus = STATUS_MAP_FRONTEND_TO_BACKEND["completo"];
+
+      if (!newBackendStatus) {
+        notify.error(
+          "Status 'completo' não mapeado para o formato do backend."
+        );
+        return;
+      }
+
+      try {
+        const authToken = Cookies.get("authToken");
+        if (!authToken) {
+          notify.error("Você não está autenticado.");
+          router.push("/login");
+          return;
+        }
+
+        // Usar a URL base e adicionar o caminho do endpoint de atualização
+        const backendUpdateUrl = `${process.env.NEXT_PUBLIC_NESTJS_API_URL}/support-requests/${id}/status`; // Exemplo
+
+        const response = await fetch(backendUpdateUrl, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ status: newBackendStatus }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Falha ao atualizar status.");
+        }
+
+        setHistoryItems((prevItems) =>
+          prevItems.map((item) =>
+            item.id === id ? { ...item, status: "completo" } : item
+          )
+        );
+        notify.success(`Item ${id} marcado como completo!`);
+      } catch (error) {
+        console.error("Erro ao marcar como completo:", error);
+        notify.error(`Erro ao marcar como completo: ${error.message}`);
+      }
     },
-    [updateItemStatus]
+    [historyItems, router]
   );
 
   const filteredItems = useMemo(() => {
     let items = historyItems;
 
-    // Filtra por tipo usando o typeParam do filterState
     if (filterState.typeParam === "denuncia") {
       items = items.filter((item) => item.type === "Denúncia");
     } else if (filterState.typeParam === "solicitacao") {
       items = items.filter((item) => item.type === "Solicitação");
     }
 
-    // Filtra por data
     if (filterState.date) {
       items = items.filter((item) => item.date === filterState.date);
     }
 
-    // Filtra por status
     if (filterState.status) {
       items = items.filter((item) => item.status === filterState.status);
     }
@@ -133,25 +206,28 @@ export default function HistoryPage() {
     return items;
   }, [
     historyItems,
-    filterState.typeParam, // Depende do typeParam do filterState
+    filterState.typeParam,
     filterState.date,
     filterState.status,
   ]);
 
   const allPossibleStatuses = useMemo(() => {
-    const statuses = new Set(historyItems.map((item) => item.status));
+    const statuses = new Set(Object.values(STATUS_MAP_BACKEND_TO_FRONTEND));
     const sortedStatuses = Array.from(statuses).sort();
     return ["", ...sortedStatuses];
-  }, [historyItems]);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
+        <p className="text-white text-xl">Carregando histórico...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-900 flex">
-      {/*
-          Passa o activeLink para a Sidebar e a função handleFilterChange.
-          A Sidebar usará esses para gerenciar seus links internos.
-          Não precisa mais de onLinkClick. Os links internos da Sidebar já chamam handleFilterChange.
-        */}
-      <Sidebar isAdmin={false} /> {/* Não é admin, então isAdmin é false */}
+      <Sidebar isAdmin={false} />
       <main className="flex-1 p-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white mb-4 md:mb-0">

@@ -2,11 +2,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link"; // Link pode ser útil para navegação futura, mesmo que não usado diretamente no formulário
+import Link from "next/link";
 import Sidebar from "../../components/Sidebar";
 import { FiPlus, FiList, FiLogOut, FiUploadCloud } from "react-icons/fi";
 import { useRouter } from "next/navigation";
-import { notify } from "../../utils/toastUtils"; // Importe seu utilitário de toast
+import { notify } from "../../utils/toastUtils";
 
 export default function NovaDenunciaPage() {
   const router = useRouter();
@@ -20,39 +20,64 @@ export default function NovaDenunciaPage() {
   const [arquivos, setArquivos] = useState(null);
   const [concordaTermos, setConcordaTermos] = useState(false);
 
-  const handleSubmit = (event) => {
+  // Access the environment variable
+  const NESTJS_API_URL = process.env.NEXT_PUBLIC_NESTJS_API_URL;
+
+  const handleSubmit = async (event) => {
+    // Made handleSubmit async
     event.preventDefault();
+
     if (!titulo || !tipo || !descricao || !arquivos || !concordaTermos) {
-      // Substituído alert por notify.error
       notify.error(
         "Por favor, preencha todos os campos obrigatórios e anexe pelo menos um arquivo."
       );
       return;
     }
-    console.log({
-      titulo,
-      tipo,
-      descricao,
-      dataOcorrido,
-      localOcorrido,
-      cidade,
-      estado,
-      arquivos: arquivos ? Array.from(arquivos).map((file) => file.name) : [],
-      concordaTermos,
-    });
-    // Substituído alert por notify.success
-    notify.success("Denúncia enviada com sucesso!");
 
-    // Limpar o formulário após o envio
-    setTitulo("");
-    setTipo("");
-    setDescricao("");
-    setDataOcorrido("");
-    setLocalOcorrido("");
-    setCidade("");
-    setEstado("Bahia");
-    setArquivos(null);
-    setConcordaTermos(false);
+    const formData = new FormData();
+    formData.append("titulo", titulo);
+    formData.append("tipo", tipo);
+    formData.append("descricao", descricao);
+    formData.append("dataOcorrido", dataOcorrido);
+    formData.append("localOcorrido", localOcorrido);
+    formData.append("cidade", cidade);
+    formData.append("estado", estado);
+    Array.from(arquivos).forEach((file) => {
+      formData.append("arquivos", file); // 'arquivos' should match the field name in your NestJS multer setup
+    });
+
+    try {
+      // Use the API URL from the environment variable
+      const response = await fetch(`${NESTJS_API_URL}/denuncias`, {
+        // Adjust endpoint as needed
+        method: "POST",
+        body: formData,
+        // No 'Content-Type': 'multipart/form-data' header needed here; fetch sets it automatically with FormData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Erro ao enviar denúncia.");
+      }
+
+      notify.success("Denúncia enviada com sucesso!");
+      // Optionally, redirect the user after successful submission
+      router.push("/dashboard"); // Example: redirect to a dashboard page
+
+      // Clear the form after submission
+      setTitulo("");
+      setTipo("");
+      setDescricao("");
+      setDataOcorrido("");
+      setLocalOcorrido("");
+      setCidade("");
+      setEstado("Bahia");
+      setArquivos(null);
+      setConcordaTermos(false);
+    } catch (error) {
+      console.error("Erro ao enviar denúncia:", error);
+      notify.error(`Falha ao enviar denúncia: ${error.message}`);
+    }
   };
 
   const handleArquivoChange = (event) => {
@@ -78,9 +103,7 @@ export default function NovaDenunciaPage() {
 
   return (
     <div className="min-h-screen bg-zinc-900 flex">
-      {/* Certifique-se de que Sidebar esteja configurada para receber props corretas se necessário */}
       <Sidebar />
-      {/* Main Content - Form for New Complaint */}
       <main className="flex-1 p-8">
         <div className="bg-white rounded-lg shadow-md p-8">
           <h1 className="text-2xl font-bold text-zinc-800 mb-6">

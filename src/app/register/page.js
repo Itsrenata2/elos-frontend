@@ -4,30 +4,33 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
-import { notify } from "../../utils/toastUtils"; // Importe seu utilitário de toast
+import { notify } from "../../utils/toastUtils";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // Removendo o estado 'error' local, pois os erros serão exibidos via toast
-  // const [error, setError] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    // Não precisamos mais limpar o estado de erro, pois o toast é efêmero
-    // setError("");
     setIsLoading(true);
+
+    if (password !== confirmPassword) {
+      notify.error("A senha e a confirmação de senha não coincidem.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      // **URL do endpoint de registro do seu NestJS**
-      const backendRegisterUrl =
-        process.env.NEXT_PUBLIC_NESTJS_API_URL_REGISTER;
+      // Usar a URL base e adicionar o caminho do endpoint de registro
+      const backendRegisterUrl = `${process.env.NEXT_PUBLIC_NESTJS_API_URL}/auth/register`;
 
       if (!backendRegisterUrl) {
         console.error(
-          "Variável de ambiente NEXT_PUBLIC_API_URL_REGISTER não definida."
+          "Variável de ambiente NEXT_PUBLIC_NESTJS_API_URL não definida ou incorreta."
         );
         notify.error(
           "Erro de configuração: URL do backend de registro não encontrada."
@@ -45,7 +48,6 @@ export default function RegisterPage() {
         body: JSON.stringify({ name, email, password }),
       });
 
-      // **DEBUG: log da resposta bruta antes de tentar JSON.parse**
       const responseText = await response.text();
       console.log("Status da Resposta:", response.status);
       console.log("Corpo da Resposta (texto puro):", responseText);
@@ -134,8 +136,19 @@ export default function RegisterPage() {
               disabled={isLoading}
             />
           </div>
-          {/* Removendo a exibição do erro aqui, pois será feita via toast */}
-          {/* {error && <p className="text-red-500 text-sm text-center">{error}</p>} */}
+          <div>
+            <label className="block text-sm font-semibold text-zinc-800 mb-1">
+              Confirmar Senha
+            </label>
+            <input
+              type="password"
+              className="w-full px-4 py-2 rounded-md bg-zinc-300 text-zinc-800 focus:outline-none"
+              placeholder="Confirme sua senha"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={isLoading}
+            />
+          </div>
           <button
             type="submit"
             className="w-full bg-zinc-900 text-white py-3 rounded-md font-semibold hover:bg-zinc-800 transition"

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Cookies from "js-cookie";
 import { useState, useEffect } from "react";
-import { notify } from "../../utils/toastUtils"; // Importe seu utilitário de toast
+import { notify } from "../../utils/toastUtils";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,8 +13,6 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // Removendo o estado 'error' local, pois os erros serão exibidos via toast
-  // const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [redirectTo, setRedirectTo] = useState("/records");
 
@@ -29,16 +27,15 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // Não precisamos mais limpar o estado de erro, pois o toast é efêmero
-    // setError("");
     setIsLoading(true);
 
     try {
-      const backendLoginUrl = process.env.NEXT_PUBLIC_NESTJS_API_URL_LOGIN;
+      // Usar a URL base e adicionar o caminho do endpoint de login
+      const backendLoginUrl = `${process.env.NEXT_PUBLIC_NESTJS_API_URL}/auth/login`;
 
       if (!backendLoginUrl) {
         console.error(
-          "Variável de ambiente NEXT_PUBLIC_NESTJS_API_URL_LOGIN não definida."
+          "Variável de ambiente NEXT_PUBLIC_NESTJS_API_URL não definida ou incorreta."
         );
         notify.error(
           "Erro de configuração: URL do backend de login não encontrada."
@@ -136,8 +133,6 @@ export default function LoginPage() {
               disabled={isLoading}
             />
           </div>
-          {/* Removendo a exibição do erro aqui, pois será feita via toast */}
-          {/* {error && <p className="text-red-500 text-sm text-center">{error}</p>} */}
           <button
             type="submit"
             className="w-full bg-zinc-900 text-white py-3 rounded-md font-semibold hover:bg-zinc-800 transition"
